@@ -1,79 +1,37 @@
 import Course from "../models/Course.js"
-import User from "../models/User.js"
-import Attendance from "../models/Attendance.js"
-import { sendNotification } from "../services/notificationService.js"
-
-// @desc    Create a new course
-// @route   POST /api/courses
-// @access  Private/Faculty
-const createCourse = async (req, res) => {
-  try {
-    const { name, code, description, semester, branch, syllabus } = req.body
-
-    // Check if course code already exists
-    const courseExists = await Course.findOne({ code })
-
-    if (courseExists) {
-      return res.status(400).json({ message: "Course with this code already exists" })
-    }
-
-    // Create course with faculty as creator
-    const course = await Course.create({
-      name,
-      code,
-      description,
-      semester,
-      branch,
-      faculty: req.user._id,
-      syllabus,
-    })
-
-    if (course) {
-      // Send notification about new course
-      await sendNotification({
-        title: "New Course Added",
-        message: `A new course "${name}" (${code}) has been added for ${branch} - Semester ${semester}`,
-        type: "info",
-        sender: req.user._id,
-        recipients: "students",
-        relatedTo: {
-          model: "Course",
-          id: course._id,
-        },
-        sentVia: ["app"],
-      })
-
-      res.status(201).json(course)
-    } else {
-      res.status(400).json({ message: "Invalid course data" })
-    }
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: "Server error", error: error.message })
-  }
-}
+import { uploadFile } from "../services/googleDriveService.js"
 
 // @desc    Get all courses
 // @route   GET /api/courses
 // @access  Private
 const getCourses = async (req, res) => {
   try {
-    const { semester, branch } = req.query
+    const { semester, branch, page = 1, limit = 10 } = req.query
 
-    const filter = {}
+    const query = {}
+    if (semester) query.semester = semester
+    if (branch) query.branch = branch
 
-    if (semester) filter.semester = semester
-    if (branch) filter.branch = branch
-
-    // If user is a student, only show courses for their semester and branch
+    // If user is a student, only show courses they're enrolled in
     if (req.user.role === "student") {
-      filter.semester = req.user.semester
-      filter.branch = req.user.branch
+      query.students = req.user._id
     }
 
-    const courses = await Course.find(filter).populate("faculty", "name email").sort({ createdAt: -1 })
+    const courses = await Course.find(query)
+      .populate("faculty", "name email")
+      .populate("students", "name email studentId")
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .sort({ createdAt: -1 })
 
-    res.json(courses)
+    const total = await Course.countDocuments(query)
+
+    res.json({
+      courses,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      total,
+    })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: "Server error", error: error.message })
@@ -89,11 +47,45 @@ const getCourseById = async (req, res) => {
       .populate("faculty", "name email")
       .populate("students", "name email studentId")
 
-    if (course) {
-      res.json(course)
-    } else {
-      res.status(404).json({ message: "Course not found" })
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" })
     }
+
+    res.json(course)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "Server error", error: error.message })
+  }
+}
+
+// @desc    Create new course
+// @route   POST /api/courses
+// @access  Private/Faculty/Admin
+const createCourse = async (req, res) => {
+  try {
+    const { name, code, description, semester, branch, students } = req.body
+
+    // Check if course code already exists
+    const existingCourse = await Course.findOne({ code })
+    if (existingCourse) {
+      return res.status(400).json({ message: "Course code already exists" })
+    }
+
+    const course = await Course.create({
+      name,
+      code,
+      description,
+      semester,
+      branch,
+      faculty: req.user._id,
+      students: students || [],
+    })
+
+    const populatedCourse = await Course.findById(course._id)
+      .populate("faculty", "name email")
+      .populate("students", "name email studentId")
+
+    res.status(201).json(populatedCourse)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: "Server error", error: error.message })
@@ -102,7 +94,7 @@ const getCourseById = async (req, res) => {
 
 // @desc    Update course
 // @route   PUT /api/courses/:id
-// @access  Private/Faculty
+// @access  Private/Faculty/Admin
 const updateCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id)
@@ -111,18 +103,17 @@ const updateCourse = async (req, res) => {
       return res.status(404).json({ message: "Course not found" })
     }
 
-    // Check if faculty is the creator of the course
-    if (course.faculty.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+    // Check if user is authorized to update this course
+    if (req.user.role !== "admin" && course.faculty.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized to update this course" })
     }
 
-    course.name = req.body.name || course.name
-    course.description = req.body.description || course.description
-    course.semester = req.body.semester || course.semester
-    course.branch = req.body.branch || course.branch
-    course.syllabus = req.body.syllabus || course.syllabus
-
-    const updatedCourse = await course.save()
+    const updatedCourse = await Course.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    })
+      .populate("faculty", "name email")
+      .populate("students", "name email studentId")
 
     res.json(updatedCourse)
   } catch (error) {
@@ -142,22 +133,19 @@ const deleteCourse = async (req, res) => {
       return res.status(404).json({ message: "Course not found" })
     }
 
-    await course.deleteOne()
+    await Course.findByIdAndDelete(req.params.id)
 
-    // Delete all attendance records for this course
-    await Attendance.deleteMany({ course: req.params.id })
-
-    res.json({ message: "Course removed" })
+    res.json({ message: "Course deleted successfully" })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: "Server error", error: error.message })
   }
 }
 
-// @desc    Add students to course
-// @route   POST /api/courses/:id/students
-// @access  Private/Faculty
-const addStudentsToCourse = async (req, res) => {
+// @desc    Enroll student in course
+// @route   POST /api/courses/:id/enroll
+// @access  Private/Student
+const enrollInCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id)
 
@@ -165,62 +153,29 @@ const addStudentsToCourse = async (req, res) => {
       return res.status(404).json({ message: "Course not found" })
     }
 
-    // Check if faculty is the creator of the course
-    if (course.faculty.toString() !== req.user._id.toString() && req.user.role !== "admin") {
-      return res.status(403).json({ message: "Not authorized to update this course" })
+    // Check if student is already enrolled
+    if (course.students.includes(req.user._id)) {
+      return res.status(400).json({ message: "Already enrolled in this course" })
     }
 
-    const { studentIds } = req.body
-
-    if (!studentIds || !Array.isArray(studentIds)) {
-      return res.status(400).json({ message: "Student IDs are required" })
-    }
-
-    // Find students by their IDs
-    const students = await User.find({
-      _id: { $in: studentIds },
-      role: "student",
-    })
-
-    if (students.length === 0) {
-      return res.status(404).json({ message: "No valid students found" })
-    }
-
-    // Add students to course
-    for (const student of students) {
-      if (!course.students.includes(student._id)) {
-        course.students.push(student._id)
-      }
-    }
-
+    course.students.push(req.user._id)
     await course.save()
 
-    // Send notification to added students
-    await sendNotification({
-      title: "Added to Course",
-      message: `You have been added to the course "${course.name}" (${course.code})`,
-      type: "info",
-      sender: req.user._id,
-      recipients: "specific-users",
-      specificUsers: students.map((student) => student._id),
-      relatedTo: {
-        model: "Course",
-        id: course._id,
-      },
-      sentVia: ["app", "email"],
-    })
+    const updatedCourse = await Course.findById(course._id)
+      .populate("faculty", "name email")
+      .populate("students", "name email studentId")
 
-    res.json({ message: "Students added to course", course })
+    res.json(updatedCourse)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: "Server error", error: error.message })
   }
 }
 
-// @desc    Remove student from course
-// @route   DELETE /api/courses/:id/students/:studentId
+// @desc    Upload course material
+// @route   POST /api/courses/:id/materials
 // @access  Private/Faculty
-const removeStudentFromCourse = async (req, res) => {
+const uploadCourseMaterial = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id)
 
@@ -228,29 +183,28 @@ const removeStudentFromCourse = async (req, res) => {
       return res.status(404).json({ message: "Course not found" })
     }
 
-    // Check if faculty is the creator of the course
-    if (course.faculty.toString() !== req.user._id.toString() && req.user.role !== "admin") {
-      return res.status(403).json({ message: "Not authorized to update this course" })
+    // Check if user is authorized to upload materials
+    if (req.user.role !== "admin" && course.faculty.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized to upload materials for this course" })
     }
 
-    // Remove student from course
-    course.students = course.students.filter((studentId) => studentId.toString() !== req.params.studentId)
+    const { title, file } = req.body
+
+    // Upload file to Google Drive
+    const uploadedFile = await uploadFile(req.user, file, title, "application/pdf")
+
+    course.materials.push({
+      title,
+      fileUrl: uploadedFile.webViewLink,
+    })
 
     await course.save()
 
-    res.json({ message: "Student removed from course", course })
+    res.json(course)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: "Server error", error: error.message })
   }
 }
 
-export {
-  createCourse,
-  getCourses,
-  getCourseById,
-  updateCourse,
-  deleteCourse,
-  addStudentsToCourse,
-  removeStudentFromCourse,
-}
+export { getCourses, getCourseById, createCourse, updateCourse, deleteCourse, enrollInCourse, uploadCourseMaterial }
