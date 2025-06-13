@@ -7,12 +7,17 @@ const feeSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    academicYear: {
+      type: String,
+      required: true,
+    },
     semester: {
       type: Number,
       required: true,
     },
-    academicYear: {
+    feeType: {
       type: String,
+      enum: ["tuition", "hostel", "mess", "library", "lab", "exam", "other"],
       required: true,
     },
     amount: {
@@ -25,31 +30,33 @@ const feeSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "partial", "paid", "overdue"],
+      enum: ["pending", "paid", "overdue", "partial"],
       default: "pending",
     },
-    transactions: [
-      {
-        amount: Number,
-        paymentDate: {
-          type: Date,
-          default: Date.now,
-        },
-        paymentMethod: {
-          type: String,
-          enum: ["online", "cash", "cheque", "bank-transfer"],
-          required: true,
-        },
-        transactionId: String,
-        receipt: String,
-      },
-    ],
-    feeType: {
+    paidAmount: {
+      type: Number,
+      default: 0,
+    },
+    paidDate: Date,
+    paymentMethod: {
       type: String,
-      enum: ["tuition", "hostel", "transport", "examination", "other"],
-      default: "tuition",
+      enum: ["cash", "card", "upi", "net-banking", "cheque"],
+    },
+    transactionId: String,
+    receiptNumber: String,
+    late_fee: {
+      type: Number,
+      default: 0,
+    },
+    discount: {
+      type: Number,
+      default: 0,
     },
     remarks: String,
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   {
     timestamps: true,
