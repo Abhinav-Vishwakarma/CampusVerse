@@ -69,6 +69,7 @@ router.post(
         role,
         phone,
       }
+      
 
       // Add role-specific fields
       if (role === "student") {
@@ -147,19 +148,20 @@ router.post(
 
       // Check if user exists
       const user = await User.findOne({ email })
+      console.log(user)
       if (!user) {
         return res.status(400).json({
           success: false,
-          message: "Invalid credentials",
+          message: "Invalid Email",
         })
       }
-
+      console.log(password)
       // Check password
       const isMatch = await user.comparePassword(password)
       if (!isMatch) {
         return res.status(400).json({
           success: false,
-          message: "Invalid credentials",
+          message: "Invalid Password",
         })
       }
 

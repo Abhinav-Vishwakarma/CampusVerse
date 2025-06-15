@@ -1,9 +1,8 @@
-"use client"
-
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
+import debounce from 'lodash/debounce'
 import { useNotification } from "../../contexts/NotificationContext"
 import { usersAPI } from "../../services/api"
-import { Users, Search, Filter, Plus, Edit, Trash2, Eye } from "lucide-react"
+import { Search, Filter, Plus, Edit, Trash2, Eye, Users, UserCheck, FileSearch } from "lucide-react"
 
 const UserManagement = () => {
   const { showSuccess, showError } = useNotification()
@@ -21,10 +20,73 @@ const UserManagement = () => {
     role: "student",
     course: "",
     branch: "",
-    semester: "",
+    semester: null,
     admissionNumber: "",
     phone: "",
+    section: "",
+    department: "",
+    employeeId:"",
   })
+  const [advancedSearch, setAdvancedSearch] = useState({
+    searchId: "",
+    branch: "",
+    section: "",
+    course: "",
+    role: ""
+  })
+  const [suggestions, setSuggestions] = useState([])
+  const [filters, setFilters] = useState({
+    roles: [],
+    branches: [],
+    courses: [],
+    departments: []
+  })
+
+  // Debounced search function for suggestions
+  const debouncedSuggestions = useCallback(
+    debounce(async (query) => {
+      if (query.length >= 2) {
+        try {
+          const response = await usersAPI.getSuggestions(query)
+          if (response?.data) {
+            setSuggestions(response.data.users)
+          }
+        } catch (error) {
+          console.error('Failed to fetch suggestions:', error)
+        }
+      } else {
+        setSuggestions([])
+      }
+    }, 300),
+    []
+  )
+
+  // Fetch available filters
+  const fetchFilters = async () => {
+    try {
+      const response = await usersAPI.getFilters()
+      if (response?.data?.data) {
+        setFilters(response.data.data)
+      } else {
+        // Set default values if API fails
+        setFilters({
+          roles: ['student', 'faculty', 'admin'],
+          branches: ['CSE', 'ECE', 'ME', 'CE', 'EE'],
+          courses: ['BTech', 'MTech', 'BCA', 'MCA'],
+          departments: ['CSE', 'ECE', 'ME', 'CE', 'EE']
+        })
+      }
+    } catch (error) {
+      console.error('Failed to fetch filters:', error)
+      // Set default values on error
+      setFilters({
+        roles: ['student', 'faculty', 'admin'],
+        branches: ['CSE', 'ECE', 'ME', 'CE', 'EE'],
+        courses: ['BTech', 'MTech', 'BCA', 'MCA'],
+        departments: ['CSE', 'ECE', 'ME', 'CE', 'EE']
+      })
+    }
+  }
 
   useEffect(() => {
     fetchUsers()
@@ -38,7 +100,8 @@ const UserManagement = () => {
     try {
       setLoading(true)
       const response = await usersAPI.getUsers()
-      const usersData = response?.data || []
+      console.log(response.data)
+      const usersData = response?.data.users || []
       setUsers(Array.isArray(usersData) ? usersData : [])
     } catch (error) {
       console.error("Failed to fetch users:", error)
@@ -81,7 +144,14 @@ const UserManagement = () => {
         return
       }
 
-      const response = await usersAPI.createUser(newUser)
+      const dataToSend = { ...newUser };
+
+      // Conditional removal of 'semester' if role is 'faculty'
+      if (dataToSend.role === "faculty" || dataToSend.role === "admin") {
+        delete dataToSend.semester;
+      }
+
+      const response = await usersAPI.createUser(dataToSend)
       if (response?.data) {
         setUsers((prev) => [response.data, ...prev])
         setShowCreateModal(false)
@@ -91,9 +161,12 @@ const UserManagement = () => {
           role: "student",
           course: "",
           branch: "",
-          semester: "",
+          semester: null,
           admissionNumber: "",
           phone: "",
+          section: "",
+          department: "",
+          employeeId:"",
         })
         showSuccess("User created successfully")
       }
@@ -141,6 +214,38 @@ const UserManagement = () => {
     }
   }
 
+  // Modified search handler
+  const handleAdvancedSearch = async () => {
+    try {
+      setLoading(true)
+      const response = await usersAPI.searchUsers({
+        search: advancedSearch.searchId,
+        role: advancedSearch.role,
+        branch: advancedSearch.branch,
+        course: advancedSearch.course,
+        page: 1,
+        limit: 10
+      })
+
+      if (response?.data) {
+        setUsers(response.data.users)
+        showSuccess("Search completed successfully")
+      }
+    } catch (error) {
+      console.error("Search failed:", error)
+      showError(error.response?.data?.message || "Failed to perform search")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Update search input to handle suggestions
+  const handleSearchInput = (e) => {
+    const value = e.target.value
+    setAdvancedSearch(prev => ({...prev, searchId: value}))
+    debouncedSuggestions(value)
+  }
+
   const getRoleColor = (role) => {
     switch (role) {
       case "admin":
@@ -153,6 +258,10 @@ const UserManagement = () => {
         return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
     }
   }
+
+  useEffect(() => {
+    fetchFilters()
+  }, []) // Empty dependency array means it runs once on mount
 
   if (loading) {
     return (
@@ -185,6 +294,7 @@ const UserManagement = () => {
           <span>Add User</span>
         </button>
       </div>
+      
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -263,6 +373,107 @@ const UserManagement = () => {
         </div>
       </div>
 
+      {/* Advanced Search Bar with Suggestions */}
+      <div className="card p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <FileSearch className="w-5 h-5 text-gray-500" />
+          <h2 className="text-lg font-semibold">Advanced Search</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={advancedSearch.searchId}
+              onChange={handleSearchInput}
+              className="input-field"
+            />
+            {suggestions.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 rounded-md shadow-lg">
+                {suggestions.map((suggestion) => (
+                  <div
+                    key={suggestion.id}
+                    className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    onClick={() => {
+                      setAdvancedSearch(prev => ({...prev, searchId: suggestion.name}))
+                      setSuggestions([])
+                    }}
+                  >
+                    <div className="flex items-center">
+                      {suggestion.profilePicture ? (
+                        <img src={suggestion.profilePicture} className="w-8 h-8 rounded-full mr-2" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gray-200 mr-2 flex items-center justify-center">
+                          {suggestion.name[0].toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <div className="text-sm font-medium">{suggestion.name}</div>
+                        <div className="text-xs text-gray-500">{suggestion.email}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <select
+            value={advancedSearch.branch}
+            onChange={(e) => setAdvancedSearch(prev => ({...prev, branch: e.target.value}))}
+            className="input-field"
+          >
+            <option value="">Select Branch</option>
+            {filters?.branches?.map(branch => (
+              <option key={branch} value={branch}>{branch}</option>
+            )) || null}
+          </select>
+
+          <select
+            value={advancedSearch.section}
+            onChange={(e) => setAdvancedSearch(prev => ({...prev, section: e.target.value}))}
+            className="input-field"
+          >
+            <option value="">Select Section</option>
+            <option value="A">Section A</option>
+            <option value="B">Section B</option>
+            <option value="C">Section C</option>
+            <option value="D">Section D</option>
+          </select>
+
+          <select
+            value={advancedSearch.course}
+            onChange={(e) => setAdvancedSearch(prev => ({...prev, course: e.target.value}))}
+            className="input-field"
+          >
+            <option value="">Select Course</option>
+            {filters?.courses?.map(course => (
+              <option key={course} value={course}>{course}</option>
+            )) || null}
+          </select>
+
+          <select
+            value={advancedSearch.role}
+            onChange={(e) => setAdvancedSearch(prev => ({...prev, role: e.target.value}))}
+            className="input-field"
+          >
+            <option value="">Select Role</option>
+            {filters?.roles?.map(role => (
+              <option key={role} value={role}>{role}</option>
+            )) || null}
+          </select>
+
+          <button 
+            onClick={handleAdvancedSearch}
+            className="btn-primary flex items-center justify-center gap-2"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+        </div>
+      </div>
+
       {/* Users Table */}
       <div className="card">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -279,10 +490,10 @@ const UserManagement = () => {
                   Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  ID/Number
+                  ID/Addmission Number
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Course/Branch
+                  Course/Branch/Department
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Joined
@@ -410,7 +621,21 @@ const UserManagement = () => {
                   <option value="admin">Admin</option>
                 </select>
               </div>
-
+              {newUser.role != "student" &&(
+              <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Employee ID
+                    </label>
+                    <input
+                      type="text"
+                      value={newUser.employeeId}
+                      onChange={(e) => setNewUser((prev) => ({ ...prev, employeeId: e.target.value }))}
+                      className="input-field"
+                      placeholder="ID will be generated automatically"
+                      disabled
+                    />
+                  </div>)
+                  }
               {newUser.role === "student" && (
                 <>
                   <div>
@@ -422,7 +647,8 @@ const UserManagement = () => {
                       value={newUser.admissionNumber}
                       onChange={(e) => setNewUser((prev) => ({ ...prev, admissionNumber: e.target.value }))}
                       className="input-field"
-                      placeholder="Enter admission number"
+                      placeholder="ID will be generated automatically"
+                      disabled
                     />
                   </div>
 
@@ -457,9 +683,69 @@ const UserManagement = () => {
                         <option value="EE">Electrical</option>
                       </select>
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Section</label>
+                      <select
+                        value={newUser.section}
+                        onChange={(e) => setNewUser((prev) => ({ ...prev, section: e.target.value }))}
+                        className="input-field"
+                      >
+                        <option value="">Select Section</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                        <option value="E">E</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Semester</label>
+                      <select
+                        value={newUser.semester}
+                        onChange={(e) => setNewUser((prev) => ({ ...prev, semester: e.target.value }))}
+                        className="input-field"
+                      >
+                        <option value="">Select Semester</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+
+                      </select>
+                    </div>
                   </div>
                 </>
               )}
+
+              {/* Department only when role === faculty */}
+
+              {newUser.role === "faculty" && (
+                <>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
+                    <select
+                      value={newUser.department}
+                      onChange={(e) => setNewUser((prev) => ({ ...prev, department: e.target.value }))}
+                      className="input-field"
+                    >
+                      <option value="">Select Department</option>
+                      <option value="CSE">Computer Science</option>
+                      <option value="ECE">Electronics</option>
+                      <option value="ME">Mechanical</option>
+                      <option value="CE">Civil</option>
+                      <option value="EE">Electrical</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+             
+              
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
@@ -483,9 +769,11 @@ const UserManagement = () => {
                     role: "student",
                     course: "",
                     branch: "",
-                    semester: "",
+                    semester: null,
                     admissionNumber: "",
                     phone: "",
+                    section: "",
+                    employeeId:"",
                   })
                 }}
                 className="btn-secondary flex-1"

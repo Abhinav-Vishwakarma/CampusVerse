@@ -99,6 +99,7 @@ router.post('/', [
     .withMessage('Invalid priority level'),
   body('createdBy').notEmpty().withMessage('Created by user ID is required')
 ], async (req, res) => {
+  console.log(req.body)
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

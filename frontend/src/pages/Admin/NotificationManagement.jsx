@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "../../contexts/AuthContext"
 import { useNotification } from "../../contexts/NotificationContext"
 import { notificationsAPI, usersAPI } from "../../services/api"
-import { Bell, Send, Users, Calendar, CheckCircle, Search, X, User } from "lucide-react"
+import { Bell, Send, Users, Calendar, CheckCircle, Search, X, User, Trash2, RefreshCw, Eye, ChevronDown, ChevronUp } from "lucide-react"
 
 const NotificationManagement = () => {
   const { user } = useAuth()
@@ -22,13 +22,10 @@ const NotificationManagement = () => {
   const [notificationForm, setNotificationForm] = useState({
     title: "",
     message: "",
-    type: "info", // info, warning, success, error
-    targetType: "all", // all, branch, semester, year, individual
-    targetBranches: [],
-    targetSemesters: [],
-    targetYears: [],
+    type: "announcement", // info, warning, success, error
+    targetAudience: "all", // all, branch, semester, year, individual
     targetUsers: [],
-    priority: "normal", // low, normal, high, urgent
+    priority: "medium", // Changed default to medium
     scheduledAt: "",
     expiresAt: "",
   })
@@ -36,6 +33,22 @@ const NotificationManagement = () => {
   const branches = ["Computer Science", "Electronics", "Mechanical", "Civil", "Information Technology"]
   const semesters = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"]
   const years = ["2021", "2022", "2023", "2024", "2025"]
+
+  // New states for filters and pagination
+  const [filters, setFilters] = useState({
+    targetAudience: "",
+    type: "",
+    priority: "",
+    page: 1,
+    limit: 10
+  })
+  const [pagination, setPagination] = useState({
+    current: 1,
+    total: 0,
+    pages: 0
+  })
+  const [selectedNotification, setSelectedNotification] = useState(null)
+  const [showDetails, setShowDetails] = useState(false)
 
   useEffect(() => {
     fetchNotifications()
@@ -49,15 +62,38 @@ const NotificationManagement = () => {
     }
   }, [userSearchQuery])
 
+  // Update useEffect to watch for filter changes
+  useEffect(() => {
+    fetchNotifications();
+  }, [filters]); // Add filters as dependency
+
+  // Update fetchNotifications function
   const fetchNotifications = async () => {
     try {
-      const response = await notificationsAPI.getNotifications()
-      const notificationsData = response?.data || []
-      setNotifications(Array.isArray(notificationsData) ? notificationsData : [])
+      setLoading(true);
+      const queryParams = {
+        page: filters.page,
+        limit: filters.limit,
+        ...(filters.targetAudience && { targetAudience: filters.targetAudience }),
+        ...(filters.type && { type: filters.type }),
+        ...(filters.priority && { priority: filters.priority })
+      };
+      
+      const response = await notificationsAPI.getNotifications(queryParams);
+      
+      if (response?.data?.data) {
+        setNotifications(response.data.data);
+        setPagination({
+          current: response.data.pagination.current,
+          total: response.data.pagination.total,
+          pages: response.data.pagination.pages
+        });
+      }
     } catch (error) {
-      console.error("Failed to fetch notifications:", error)
-      showError("Failed to fetch notifications")
-      setNotifications([])
+      console.error("Failed to fetch notifications:", error);
+      showError(error.response?.data?.message || "Failed to fetch notifications");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -99,18 +135,13 @@ const NotificationManagement = () => {
     e.preventDefault()
 
     if (!notificationForm.title || !notificationForm.message) {
-      showError("Please fill in title and message")
+      showError("Title and message are required")
       return
     }
 
-    if (
-      notificationForm.targetType !== "all" &&
-      notificationForm.targetBranches.length === 0 &&
-      notificationForm.targetSemesters.length === 0 &&
-      notificationForm.targetYears.length === 0 &&
-      notificationForm.targetUsers.length === 0
-    ) {
-      showError("Please select target recipients")
+    // Validate individual target users
+    if (notificationForm.targetAudience === "individual" && notificationForm.targetUsers.length === 0) {
+      showError("Please select target users for individual notifications")
       return
     }
 
@@ -118,61 +149,40 @@ const NotificationManagement = () => {
     try {
       const notificationData = {
         ...notificationForm,
-        createdBy: user?.id,
+        createdBy: user?.id, // Required by backend
         scheduledFor: notificationForm.scheduledAt || null,
         expiresAt: notificationForm.expiresAt || null,
       }
 
       const response = await notificationsAPI.createNotification(notificationData)
 
-      if (response?.data) {
-        const newNotification = {
-          ...response.data,
-          sentBy: user?.name || "Admin",
-          recipients: calculateRecipients(),
-          readCount: 0,
-          status: notificationForm.scheduledAt ? "scheduled" : "sent",
-        }
-
+      if (response?.data?.success) {
+        const newNotification = response.data.data
         setNotifications((prev) => [newNotification, ...prev])
 
+        // Reset form
         setNotificationForm({
           title: "",
           message: "",
-          type: "info",
-          targetType: "all",
-          targetBranches: [],
-          targetSemesters: [],
-          targetYears: [],
+          type: "announcement",
+          targetAudience: "all",
           targetUsers: [],
-          priority: "normal",
+          priority: "medium",
           scheduledAt: "",
           expiresAt: "",
         })
-
         setSelectedUsers([])
-
-        showSuccess(
-          notificationForm.scheduledAt ? "Notification scheduled successfully!" : "Notification sent successfully!",
-        )
+        showSuccess("Notification sent successfully!")
       }
     } catch (error) {
       console.error("Failed to send notification:", error)
-      showError("Failed to send notification")
+      showError(error.response?.data?.message || "Failed to send notification")
     } finally {
       setLoading(false)
     }
   }
 
-  const calculateRecipients = () => {
-    if (notificationForm.targetType === "all") return 450
-    if (notificationForm.targetType === "branch") return notificationForm.targetBranches.length * 100
-    if (notificationForm.targetType === "semester") return notificationForm.targetSemesters.length * 60
-    if (notificationForm.targetType === "year") return notificationForm.targetYears.length * 120
-    if (notificationForm.targetType === "individual") return notificationForm.targetUsers.length
-    return 0
-  }
-
+  // Update the notification type select options
   const getTypeColor = (type) => {
     switch (type) {
       case "success":
@@ -218,6 +228,124 @@ const NotificationManagement = () => {
     })
   }
 
+  // Add pagination handler
+  const handlePageChange = (newPage) => {
+    setFilters(prev => ({ ...prev, page: newPage }))
+  }
+
+  // Add delete handler
+  const handleDeleteNotification = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this notification?")) {
+      return
+    }
+
+    try {
+      await notificationsAPI.deleteNotification(id)
+      showSuccess("Notification deleted successfully")
+      fetchNotifications()
+    } catch (error) {
+      showError(error.response?.data?.message || "Failed to delete notification")
+    }
+  }
+
+  // Add bulk notification handler
+  const handleBulkSend = async () => {
+    try {
+      setLoading(true)
+      const response = await notificationsAPI.createBulkNotifications(
+        [notificationForm], 
+        user?.id
+      )
+      if (response?.data?.success) {
+        showSuccess(`${response.data.data.length} notifications created`)
+        fetchNotifications()
+      }
+    } catch (error) {
+      showError(error.response?.data?.message || "Failed to send notifications")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Add notification details viewer
+  const NotificationDetails = ({ notification }) => (
+    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mt-2">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <h4 className="font-medium text-gray-700 dark:text-gray-300">Created By</h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {notification.createdBy?.name || "Unknown"}
+          </p>
+        </div>
+        <div>
+          <h4 className="font-medium text-gray-700 dark:text-gray-300">Target Audience</h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {notification.targetAudience}
+          </p>
+        </div>
+        {notification.scheduledFor && (
+          <div>
+            <h4 className="font-medium text-gray-700 dark:text-gray-300">Scheduled For</h4>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {new Date(notification.scheduledFor).toLocaleString()}
+            </p>
+          </div>
+        )}
+        {notification.expiresAt && (
+          <div>
+            <h4 className="font-medium text-gray-700 dark:text-gray-300">Expires At</h4>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {new Date(notification.expiresAt).toLocaleString()}
+            </p>
+          </div>
+        )}
+      </div>
+      
+      <div className="mt-4">
+        <h4 className="font-medium text-gray-700 dark:text-gray-300">Read By</h4>
+        <div className="mt-2 max-h-40 overflow-y-auto">
+          {notification.readBy?.map(read => (
+            <div key={read.user._id} className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+              <User className="w-4 h-4" />
+              <span>{read.user.name}</span>
+              <span>•</span>
+              <span>{new Date(read.readAt).toLocaleString()}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+
+  const handleResendNotification = async (notification) => {
+    try {
+      setLoading(true);
+      // Create new notification with same content
+      console.log(notification)
+      const resendData = {
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+        targetAudience: notification.targetAudience,
+        targetUsers: notification.targetUsers,
+        priority: notification.priority,
+        createdBy: user?.id
+      };
+
+      const response = await notificationsAPI.createNotification(resendData);
+
+      if (response?.data?.success) {
+        showSuccess("Notification resent successfully");
+        fetchNotifications(); // Refresh the list
+      }
+    } catch (error) {
+      console.error("Failed to resend notification:", error);
+      showError(error.response?.data?.message || "Failed to resend notification");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -251,10 +379,11 @@ const NotificationManagement = () => {
                 onChange={(e) => setNotificationForm((prev) => ({ ...prev, type: e.target.value }))}
                 className="input-field"
               >
-                <option value="info">Info</option>
-                <option value="success">Success</option>
-                <option value="warning">Warning</option>
-                <option value="error">Error</option>
+                <option value="announcement">Announcement</option>
+                <option value="reminder">Reminder</option>
+                <option value="alert">Alert</option>
+                <option value="update">Update</option>
+                <option value="event">Event</option>
               </select>
             </div>
           </div>
@@ -280,7 +409,7 @@ const NotificationManagement = () => {
                 className="input-field"
               >
                 <option value="low">Low</option>
-                <option value="normal">Normal</option>
+                <option value="medium">Medium</option>
                 <option value="high">High</option>
                 <option value="urgent">Urgent</option>
               </select>
@@ -289,24 +418,24 @@ const NotificationManagement = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Target Audience</label>
               <select
-                value={notificationForm.targetType}
+                value={notificationForm.targetAudience}
                 onChange={(e) => {
-                  setNotificationForm((prev) => ({ ...prev, targetType: e.target.value }))
+                  setNotificationForm((prev) => ({ ...prev, targetAudience: e.target.value }))
                   setShowUserSearch(e.target.value === "individual")
                 }}
                 className="input-field"
               >
                 <option value="all">All Users</option>
-                <option value="branch">By Branch</option>
-                <option value="semester">By Semester</option>
-                <option value="year">By Year</option>
+                <option value="students">All Students</option>
+                <option value="faculty">All Faculty</option>
+                <option value="admin">All Admins</option>
                 <option value="individual">Individual Users</option>
               </select>
             </div>
           </div>
 
           {/* Target Selection */}
-          {notificationForm.targetType === "branch" && (
+          {notificationForm.targetAudience === "branch" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Branches</label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -325,7 +454,7 @@ const NotificationManagement = () => {
             </div>
           )}
 
-          {notificationForm.targetType === "semester" && (
+          {notificationForm.targetAudience === "semester" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Select Semesters
@@ -346,7 +475,7 @@ const NotificationManagement = () => {
             </div>
           )}
 
-          {notificationForm.targetType === "year" && (
+          {notificationForm.targetAudience === "year" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Years</label>
               <div className="grid grid-cols-5 gap-2">
@@ -366,7 +495,7 @@ const NotificationManagement = () => {
           )}
 
           {/* Individual User Selection */}
-          {notificationForm.targetType === "individual" && (
+          {notificationForm.targetAudience === "individual" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Search and Select Users
@@ -503,82 +632,179 @@ const NotificationManagement = () => {
         </form>
       </div>
 
-      {/* Sent Notifications */}
-      <div className="card">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Sent Notifications</h2>
-        </div>
-        <div className="p-6">
-          <div className="space-y-4">
-            {notifications.map((notification) => (
-              <div
-                key={notification._id || notification.id}
-                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{notification.title}</h3>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(notification.type)}`}>
-                        {notification.type}
-                      </span>
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(notification.priority)}`}
-                      >
-                        {notification.priority}
-                      </span>
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-3">{notification.message}</p>
+      {/* Add filter controls */}
+      <div className="flex flex-wrap gap-4 mb-4">
+        <select
+          value={filters.targetAudience}
+          onChange={e => setFilters(prev => ({ ...prev, targetAudience: e.target.value }))}
+          className="input-field"
+        >
+          <option value="">All Audiences</option>
+          <option value="all">All Users</option>
+          <option value="students">Students</option>
+          <option value="faculty">Faculty</option>
+          <option value="admin">Admin</option>
+          <option value="individual">Individual</option>
+        </select>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-gray-500 dark:text-gray-400">
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>
-                          Sent: {notification.sentAt ? new Date(notification.sentAt).toLocaleDateString() : "N/A"}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Users className="w-4 h-4" />
-                        <span>Recipients: {notification.recipients || 0}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <CheckCircle className="w-4 h-4" />
-                        <span>Read: {notification.readCount || 0}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Bell className="w-4 h-4" />
-                        <span>By: {notification.sentBy || "Unknown"}</span>
-                      </div>
-                    </div>
-                  </div>
+        <select
+          value={filters.type}
+          onChange={e => setFilters(prev => ({ ...prev, type: e.target.value }))}
+          className="input-field"
+        >
+          <option value="">All Types</option>
+          <option value="announcement">Announcement</option>
+          <option value="reminder">Reminder</option>
+          <option value="alert">Alert</option>
+          <option value="update">Update</option>
+          <option value="event">Event</option>
+        </select>
+
+        <select
+          value={filters.priority}
+          onChange={e => setFilters(prev => ({ ...prev, priority: e.target.value }))}
+          className="input-field"
+        >
+          <option value="">All Priorities</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="urgent">Urgent</option>
+        </select>
+
+        <button 
+          onClick={() => {
+            setFilters({
+              targetAudience: "",
+              type: "",
+              priority: "",
+              page: 1,
+              limit: 10
+            });
+            fetchNotifications();
+          }}
+          className="btn-secondary flex items-center gap-2"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Reset Filters
+        </button>
+      </div>
+
+      {/* Update notifications list */}
+      <div className="space-y-4">
+        {notifications.map(notification => (
+          <div key={notification._id} className="card p-4">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1">
+                <div className="flex items-center space-x-3 mb-2">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">{notification.title}</h3>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(notification.type)}`}>
+                    {notification.type}
+                  </span>
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(notification.priority)}`}
+                  >
+                    {notification.priority}
+                  </span>
                 </div>
+                <p className="text-gray-600 dark:text-gray-400 mb-3">{notification.message}</p>
 
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Read Rate:{" "}
-                    {notification.recipients
-                      ? Math.round(((notification.readCount || 0) / notification.recipients) * 100)
-                      : 0}
-                    %
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center space-x-1">
+                    <Calendar className="w-4 h-4" />
+                    <span>
+                      Sent: {new Date(notification.createdAt).toLocaleString()}
+                    </span>
                   </div>
-                  <div className="flex space-x-2">
-                    <button className="btn-secondary text-xs">View Details</button>
-                    <button className="btn-secondary text-xs">Resend</button>
+                  <div className="flex items-center space-x-1">
+                    <Users className="w-4 h-4" />
+                    <span>Recipients: {notification.targetUsers?.length || 'All'}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Read: {notification.readBy?.length || 0}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Bell className="w-4 h-4" />
+                    <span>By: {notification.createdBy?.name || "Unknown"}</span>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-
-          {notifications.length === 0 && (
-            <div className="text-center py-8">
-              <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No notifications sent</h3>
-              <p className="text-gray-600 dark:text-gray-400">Your sent notifications will appear here.</p>
             </div>
-          )}
-        </div>
+
+            <div className="flex items-center justify-between">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Read Rate:{" "}
+                {notification.recipients
+                  ? Math.round(((notification.readCount || 0) / notification.recipients) * 100)
+                  : 0}
+                %
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={() => {
+                  setSelectedNotification(
+                    selectedNotification?._id === notification._id ? null : notification
+                  )
+                  setShowDetails(!showDetails)
+                }}
+                className="btn-secondary flex items-center gap-2"
+              >
+                {selectedNotification?._id === notification._id ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+                {selectedNotification?._id === notification._id ? "Hide Details" : "Show Details"}
+              </button>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleDeleteNotification(notification._id)}
+                  className="btn-danger flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </button>
+                <button
+                  onClick={() => handleResendNotification(notification)}
+                  className="btn-danger flex items-center gap-2"
+                >
+                  <Send className="w-4 h-4" />
+                  Resend
+                </button>
+                
+              </div>
+              
+            </div>
+
+            {selectedNotification?._id === notification._id && showDetails && (
+              <NotificationDetails notification={notification} />
+            )}
+          </div>
+        ))}
       </div>
+
+      {/* Add pagination */}
+      {pagination.pages > 1 && (
+        <div className="flex justify-center gap-2 mt-4">
+          {Array.from({ length: pagination.pages }, (_, i) => i + 1).map(page => (
+            <button
+              key={page}
+              onClick={() => handlePageChange(page)}
+              className={`px-3 py-1 rounded ${
+                page === pagination.current
+                  ? "bg-primary-600 text-white"
+                  : "bg-gray-100 dark:bg-gray-700"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+const API_BASE_URL = "http://localhost:5000/api"
 
 // Create axios-like instance for consistent API calls
 const apiRequest = async (endpoint, options = {}) => {
@@ -77,9 +77,17 @@ export const usersAPI = {
     return apiRequest(`/users${queryParams ? `?${queryParams}` : ""}`)
   },
 
-  searchUsers: (query) => {
-    const queryParams = new URLSearchParams({ search: query }).toString()
-    return apiRequest(`/users/search?${queryParams}`)
+  searchUsers: (params) => {
+    const queryString = new URLSearchParams(params).toString()
+    return apiRequest(`/users/search?${queryString}`)
+  },
+
+  getSuggestions: (query) => {
+    return apiRequest(`/users/suggestions?q=${query}`)
+  },
+
+  getFilters: () => {
+    return apiRequest('/users/filters')
   },
 
   getUser: (id) => apiRequest(`/users/${id}`),
@@ -442,38 +450,48 @@ export const notesAPI = {
 
 // Notifications API
 export const notificationsAPI = {
-  getNotifications: (filters = {}) => {
-    const queryParams = new URLSearchParams(filters).toString()
-    return apiRequest(`/notifications${queryParams ? `?${queryParams}` : ""}`)
-  },
+  getNotifications: (filters = {}) => 
+    apiRequest(`/notifications?${new URLSearchParams(filters)}`),
 
-  getNotification: (id) => apiRequest(`/notifications/${id}`),
+  getNotification: (id) => 
+    apiRequest(`/notifications/${id}`),
 
-  createNotification: (notificationData) =>
-    apiRequest("/notifications", {
-      method: "POST",
-      body: notificationData,
+  createNotification: (data) => 
+    apiRequest('/notifications', {
+      method: 'POST',
+      body: data
     }),
 
-  updateNotification: (id, notificationData) =>
+  updateNotification: (id, data) => 
     apiRequest(`/notifications/${id}`, {
-      method: "PUT",
-      body: notificationData,
+      method: 'PUT',
+      body: data
     }),
 
-  deleteNotification: (id) => apiRequest(`/notifications/${id}`, { method: "DELETE" }),
-
-  markAsRead: (id) => apiRequest(`/notifications/${id}/read`, { method: "PUT" }),
-
-  markAllAsRead: (userId) => apiRequest(`/users/${userId}/notifications/read-all`, { method: "PUT" }),
-
-  getUserNotifications: (userId) => apiRequest(`/users/${userId}/notifications`),
-
-  sendBulkNotification: (notificationData) =>
-    apiRequest("/notifications/bulk", {
-      method: "POST",
-      body: notificationData,
+  deleteNotification: (id) => 
+    apiRequest(`/notifications/${id}`, {
+      method: 'DELETE'
     }),
+
+  markAsRead: (id, userId) => 
+    apiRequest(`/notifications/${id}/read`, {
+      method: 'PUT',
+      body: { userId }
+    }),
+
+  markAllAsRead: (userId) => 
+    apiRequest(`/users/${userId}/notifications/read-all`, {
+      method: 'PUT'
+    }),
+
+  getUserNotifications: (userId, params = {}) => 
+    apiRequest(`/notifications/users/${userId}/notifications?${new URLSearchParams(params)}`),
+
+  createBulkNotifications: (notifications, createdBy) => 
+    apiRequest('/notifications/bulk', {
+      method: 'POST',
+      body: { notifications, createdBy }
+    })
 }
 
 // AI Features API

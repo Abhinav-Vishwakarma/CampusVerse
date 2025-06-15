@@ -14,9 +14,18 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const { login } = useAuth()
+  const { login, initialized } = useAuth()
   const { showSuccess, showError } = useNotification()
   const navigate = useNavigate()
+
+  // Don't render until auth is initialized
+  if (!initialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
 
   const handleChange = (e) => {
     setFormData({
