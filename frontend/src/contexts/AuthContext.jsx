@@ -1,120 +1,137 @@
-// src/contexts/AuthContext.jsx
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import * as authService from '../services/authService'; // We will create this next
-import { useNavigate } from 'react-router-dom';
+"use client"
 
-// Create the Auth Context
-export const AuthContext = createContext(null);
+import { createContext, useContext, useState, useEffect } from "react"
+import { authAPI } from "../services/api"
+
+const AuthContext = createContext()
+
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
+}
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null); // Stores user data if authenticated
-    const [isAuthenticated, setIsAuthenticated] = useState(false); // True if logged in
-    const [loading, setLoading] = useState(true); // To indicate initial auth check is ongoing
-    const navigate = useNavigate();
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-    // Function to load user from local storage or check token validity
-    const loadUser = async () => {
-        setLoading(true);
-        const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                // You might have an API endpoint to verify the token and get user data
-                // For now, let's assume if token exists, user is authenticated,
-                // and we'll try to fetch user details if needed.
-                const userData = await authService.getCurrentUser(token); // Example: Fetch user data with token
-                setUser(userData); // Set full user object
-                setIsAuthenticated(true);
-            } catch (error) {
-                console.error('Token validation failed or user data fetch error:', error);
-                localStorage.removeItem('token');
-                setUser(null);
-                setIsAuthenticated(false);
-            }
-        } else {
-            setUser(null);
-            setIsAuthenticated(false);
-        }
-        setLoading(false);
-    };
+  useEffect(() => {
+    const token = localStorage.getItem("campusverse_token")
+    if (token) {
+      fetchProfile()
+    } else {
+      setLoading(false)
+    }
+  }, [])
 
-    // Effect to load user on initial component mount
-    useEffect(() => {
-        loadUser();
-    }, []); // Empty dependency array means this runs once on mount
+  const fetchProfile = async () => {
+    try {
+      const response = await authAPI.getProfile()
+      if (response?.data) {
+        setUser(response.data)
+      } else {
+        // Handle null/undefined response
+        localStorage.removeItem("campusverse_token")
+        setUser(null)
+      }
+    } catch (error) {
+      console.error("Failed to fetch profile:", error)
+      localStorage.removeItem("campusverse_token")
+      setUser(null)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    // --- Authentication Actions ---
+  const login = async (email, password) => {
+    try {
+      if (!email || !password) {
+        return { success: false, error: "Email and password are required" }
+      }
 
-    const login = async (credentials) => {
-        setLoading(true);
-        try {
-            const { token, user: userData } = await authService.login(credentials);
-            localStorage.setItem('token', token);
-            setUser(userData); // Store full user object from backend response
-            setIsAuthenticated(true);
-            setLoading(false);
-            // Navigate to dashboard based on role or a default dashboard
-            if (userData && userData.role) {
-                navigate(`/${userData.role}/dashboard`);
-            } else {
-                navigate('/student/dashboard'); // Default if role is not explicitly returned/handled
-            }
-            return { success: true };
-        } catch (error) {
-            console.error('Login failed:', error);
-            setUser(null);
-            setIsAuthenticated(false);
-            setLoading(false);
-            // Return error for UI to display
-            throw error; // Re-throw to be caught by component
-        }
-    };
+      const response = await authAPI.login(email, password)
 
-    const register = async (userData) => {
-        setLoading(true);
-        try {
-            const { token, user: registeredUser } = await authService.register(userData);
-            localStorage.setItem('token', token);
-            setUser(registeredUser);
-            setIsAuthenticated(true);
-            setLoading(false);
-            if (registeredUser && registeredUser.role) {
-                navigate(`/${registeredUser.role}/dashboard`);
-            } else {
-                navigate('/student/dashboard'); // Default
-            }
-            return { success: true };
-        } catch (error) {
-            console.error('Registration failed:', error);
-            setUser(null);
-            setIsAuthenticated(false);
-            setLoading(false);
-            throw error;
-        }
-    };
+      if (response?.data?.token && response?.data?.user) {
+        localStorage.setItem("campusverse_token", response.data.token)
+        setUser(response.data.user)
+        return { success: true, user: response.data.user }
+      } else {
+        return { success: false, error: "Invalid response from server" }
+      }
+    } catch (error) {
+      console.error("Login error:", error)
+      return {
+        success: false,
+        error: error.message || "Login failed. Please try again.",
+      }
+    }
+  }
 
-    const logout = () => {
-        localStorage.removeItem('token');
-        setUser(null);
-        setIsAuthenticated(false);
-        // Navigate to login page after logout
-        navigate('/login');
-    };
+  const register = async (userData) => {
+    try {
+      if (!userData?.email || !userData?.password || !userData?.name) {
+        return { success: false, error: "Name, email and password are required" }
+      }
 
-    // The value provided by the context to its consumers
-    const authContextValue = {
-        user,
-        isAuthenticated,
-        loading,
-        login,
-        register,
-        logout,
-        // Potentially add a refetchUser function if user data can change frequently
-    };
+      const response = await authAPI.register(userData)
 
-    // Render the provider, passing the value to children
-    return (
-        <AuthContext.Provider value={authContextValue}>
-            {children}
-        </AuthContext.Provider>
-    );
-};
+      if (response?.data?.user) {
+        // Don't auto-login after registration, redirect to login
+        return { success: true, user: response.data.user }
+      } else {
+        return { success: false, error: "Registration failed. Please try again." }
+      }
+    } catch (error) {
+      console.error("Registration error:", error)
+      return {
+        success: false,
+        error: error.message || "Registration failed. Please try again.",
+      }
+    }
+  }
+
+  const logout = async () => {
+    try {
+      await authAPI.logout()
+    } catch (error) {
+      console.error("Logout error:", error)
+    } finally {
+      localStorage.removeItem("campusverse_token")
+      setUser(null)
+    }
+  }
+
+  const updateProfile = async (profileData) => {
+    try {
+      if (!profileData) {
+        throw new Error("Profile data is required")
+      }
+
+      const response = await authAPI.updateProfile(profileData)
+
+      if (response?.data) {
+        setUser(response.data)
+        return { success: true, user: response.data }
+      } else {
+        throw new Error("Failed to update profile")
+      }
+    } catch (error) {
+      console.error("Update profile error:", error)
+      throw new Error(error.message || "Failed to update profile")
+    }
+  }
+
+  const value = {
+    user,
+    login,
+    register,
+    logout,
+    updateProfile,
+    fetchProfile,
+    loading,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
