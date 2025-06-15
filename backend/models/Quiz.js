@@ -1,75 +1,112 @@
-import mongoose from "mongoose"
+const mongoose = require("mongoose")
 
-const quizSchema = new mongoose.Schema(
-  {
-    title: {
+const questionSchema = new mongoose.Schema({
+  question: {
+    type: String,
+    required: true,
+  },
+  options: [
+    {
       type: String,
       required: true,
     },
-    description: {
-      type: String,
-    },
-    course: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
-      required: true,
-    },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    questions: [
-      {
+  ],
+  correctAnswer: {
+    type: Number,
+    required: true,
+    min: 0,
+    max: 3,
+  },
+  marks: {
+    type: Number,
+    default: 1,
+  },
+})
+
+const quizSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  course: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course",
+    required: true,
+  },
+  faculty: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  branch: {
+    type: String,
+    required: true,
+  },
+  section: {
+    type: String,
+    required: true,
+  },
+  duration: {
+    type: Number,
+    required: true, // in minutes
+  },
+  totalMarks: {
+    type: Number,
+    required: true,
+  },
+  passingMarks: {
+    type: Number,
+    required: true,
+  },
+  questions: [questionSchema],
+  code: {
+    type: String,
+    unique: true,
+    required: true,
+  },
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+    required: true,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  attempts: [
+    {
+      student: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Question",
+        ref: "User",
       },
-    ],
-    duration: {
-      type: Number, // in minutes
-      required: true,
+      answers: [
+        {
+          question: Number,
+          selectedOption: Number,
+        },
+      ],
+      score: Number,
+      percentage: Number,
+      startTime: Date,
+      endTime: Date,
+      submittedAt: {
+        type: Date,
+        default: Date.now,
+      },
     },
-    totalMarks: {
-      type: Number,
-      required: true,
-    },
-    passingMarks: {
-      type: Number,
-      required: true,
-    },
-    startDate: {
-      type: Date,
-      required: true,
-    },
-    endDate: {
-      type: Date,
-      required: true,
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    allowMultipleAttempts: {
-      type: Boolean,
-      default: false,
-    },
-    maxAttempts: {
-      type: Number,
-      default: 1,
-    },
-    showResults: {
-      type: Boolean,
-      default: true,
-    },
-    shuffleQuestions: {
-      type: Boolean,
-      default: false,
-    },
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-  {
-    timestamps: true,
-  },
-)
+})
 
-const Quiz = mongoose.model("Quiz", quizSchema)
-export default Quiz
+module.exports = mongoose.model("Quiz", quizSchema)

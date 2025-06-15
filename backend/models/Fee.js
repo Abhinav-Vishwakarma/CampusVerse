@@ -1,67 +1,100 @@
-import mongoose from "mongoose"
+const mongoose = require("mongoose")
 
-const feeSchema = new mongoose.Schema(
-  {
-    student: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    academicYear: {
-      type: String,
-      required: true,
-    },
-    semester: {
-      type: Number,
-      required: true,
-    },
-    feeType: {
-      type: String,
-      enum: ["tuition", "hostel", "mess", "library", "lab", "exam", "other"],
-      required: true,
-    },
-    amount: {
-      type: Number,
-      required: true,
-    },
-    dueDate: {
-      type: Date,
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ["pending", "paid", "overdue", "partial"],
-      default: "pending",
-    },
-    paidAmount: {
-      type: Number,
-      default: 0,
-    },
-    paidDate: Date,
-    paymentMethod: {
-      type: String,
-      enum: ["cash", "card", "upi", "net-banking", "cheque"],
-    },
-    transactionId: String,
-    receiptNumber: String,
-    late_fee: {
-      type: Number,
-      default: 0,
-    },
-    discount: {
-      type: Number,
-      default: 0,
-    },
-    remarks: String,
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+const paymentSchema = new mongoose.Schema({
+  amount: {
+    type: Number,
+    required: true,
+  },
+  paymentMethod: {
+    type: String,
+    enum: ["cash", "card", "online", "cheque"],
+    required: true,
+  },
+  transactionId: {
+    type: String,
+    required: true,
+  },
+  paidAt: {
+    type: Date,
+    default: Date.now,
+  },
+  receipt: {
+    type: String,
+  },
+})
+
+const feeSchema = new mongoose.Schema({
+  student: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  feeType: {
+    type: String,
+    enum: ["tuition", "hostel", "library", "lab", "exam", "development", "other"],
+    required: true,
+  },
+  amount: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  dueDate: {
+    type: Date,
+    required: true,
+  },
+  semester: {
+    type: Number,
+    required: true,
+  },
+  academicYear: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+  },
+  status: {
+    type: String,
+    enum: ["pending", "paid", "overdue", "partial"],
+    default: "pending",
+  },
+  payments: [paymentSchema],
+  totalPaid: {
+    type: Number,
+    default: 0,
+  },
+  balance: {
+    type: Number,
+    default: function () {
+      return this.amount
     },
   },
-  {
-    timestamps: true,
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   },
-)
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+})
 
-const Fee = mongoose.model("Fee", feeSchema)
-export default Fee
+// Calculate balance before saving
+feeSchema.pre("save", function (next) {
+  this.totalPaid = this.payments.reduce((sum, payment) => sum + payment.amount, 0)
+  this.balance = this.amount - this.totalPaid
+
+  if (this.balance <= 0) {
+    this.status = "paid"
+  } else if (this.totalPaid > 0) {
+    this.status = "partial"
+  } else if (new Date() > this.dueDate) {
+    this.status = "overdue"
+  }
+
+  next()
+})
+
+module.exports = mongoose.model("Fee", feeSchema)
