@@ -19,6 +19,7 @@ router.get(
     query("semester").optional().isInt({ min: 1, max: 8 }),
   ],
   async (req, res) => {
+    console.log(req.query)
     try {
       const errors = validationResult(req)
       if (!errors.isEmpty()) {
@@ -29,34 +30,59 @@ router.get(
         })
       }
 
-      const { role, course, branch, semester, search, page = 1, limit = 10 } = req.query
+      let {
+        role,
+        course,
+        branch,
+        semester,
+        section,
+        search,
+        page = 1,
+        limit,
+      } = req.query
 
-      // Build filter object
+      // Handle limit conversion
+      if (limit && limit !== "all") {
+        limit = parseInt(limit)
+      } else {
+        limit = null
+      }
+
+      // Strict filter
       const filter = { isActive: true }
 
       if (role) filter.role = role
       if (course) filter.course = course
       if (branch) filter.branch = branch
-      if (semester) filter.semester = Number.parseInt(semester)
-
+      if (section) filter.section = section
+      if (semester) filter.semester = parseInt(semester)
       if (search) {
-        filter.$or = [{ name: { $regex: search, $options: "i" } }, { email: { $regex: search, $options: "i" } }]
+        filter.$or = [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ]
       }
 
-      // Fetch users based on filter
-      const users = await User.find(filter)
-        .skip((page - 1) * limit)
-        .limit(limit)
+      // Debug filter
+      console.log("MongoDB Filter:", filter)
+
+      let query = User.find(filter)
+
+      if (limit) {
+        query = query.skip((page - 1) * limit).limit(limit)
+      }
+
+      const users = await query
 
       res.json({
         success: true,
-        users: users,
+        users,
       })
     } catch (err) {
       console.error(err.message)
       res.status(500).send("Server error")
     }
-  },
+  }
 )
 
 // @route   GET /api/users/search
@@ -391,7 +417,7 @@ router.post(
         admissionNumber = `<span class="math-inline">\{branchPrefix\}</span>{new Date().getFullYear()}${Math.floor(Math.random() * 1000).toString().padStart(3, "0")}`;
       }
       // for admin
-      if (role === "admin" && employeeId === "" ) {
+      if (role === "admin" && employeeId === "") {
         employeeId = `ADM${new Date().getFullYear()}${Math.floor(Math.random() * 1000).toString().padStart(5, "0")}`;
       }
 
@@ -400,7 +426,7 @@ router.post(
         employeeId = `FAC${new Date().getFullYear()}${Math.floor(Math.random() * 1000).toString().padStart(5, "0")}`;
       }
 
-      
+
 
       // --- Default password if not provided in the request body ---
       if (!password) {

@@ -2,59 +2,59 @@
 
 import { useState, useEffect } from "react"
 import { useNotification } from "../../contexts/NotificationContext"
-import { usersAPI, coursesAPI, placementsAPI, feesAPI } from "../../services/api"
-import { BarChart3, TrendingUp, Users, BookOpen, Briefcase, DollarSign } from "lucide-react"
+import { analyticsAPI } from "../../services/api"
+import { 
+  BarChart3, 
+  TrendingUp, 
+  Users, 
+  BookOpen, 
+  Briefcase, 
+  DollarSign,
+  GraduationCap,
+  Calendar,
+  ClipboardCheck
+} from "lucide-react"
 
 const AnalyticsPage = () => {
   const { showError } = useNotification()
-  const [analytics, setAnalytics] = useState({
-    users: { total: 0, students: 0, faculty: 0, admins: 0 },
-    courses: { total: 0, active: 0 },
-    placements: { total: 0, applications: 0 },
-    fees: { total: 0, paid: 0, pending: 0, overdue: 0 },
-  })
+  const [dashboardStats, setDashboardStats] = useState(null)
+  const [userStats, setUserStats] = useState(null)
+  const [courseStats, setCourseStats] = useState(null)
+  const [feeStats, setFeeStats] = useState(null)
+  const [placementStats, setPlacementStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState({
+    branch: '',
+    semester: '',
+    role: ''
+  })
 
   useEffect(() => {
-    fetchAnalytics()
+    fetchAllStats()
   }, [])
 
-  const fetchAnalytics = async () => {
+  const fetchAllStats = async () => {
+    setLoading(true)
     try {
-      const [usersRes, coursesRes, placementsRes, feesRes] = await Promise.all([
-        usersAPI.getUsers(),
-        coursesAPI.getCourses(),
-        placementsAPI.getPlacements(),
-        feesAPI.getOverdueFees(),
+      const [
+        dashboardRes,
+        userRes,
+        courseRes,
+        feeRes,
+        placementRes
+      ] = await Promise.all([
+        analyticsAPI.getDashboardStats(),
+        analyticsAPI.getUserStats(),
+        analyticsAPI.getCourseStats(),
+        analyticsAPI.getFeeStats(),
+        analyticsAPI.getPlacementStats()
       ])
 
-      const users = usersRes.data
-      const courses = coursesRes.data
-      const placements = placementsRes.data
-      const fees = feesRes.data
-
-      setAnalytics({
-        users: {
-          total: users.length,
-          students: users.filter((u) => u.role === "student").length,
-          faculty: users.filter((u) => u.role === "faculty").length,
-          admins: users.filter((u) => u.role === "admin").length,
-        },
-        courses: {
-          total: courses.length,
-          active: courses.filter((c) => c.isActive).length,
-        },
-        placements: {
-          total: placements.length,
-          applications: placements.reduce((acc, p) => acc + (p.applications?.length || 0), 0),
-        },
-        fees: {
-          total: fees.length,
-          paid: fees.filter((f) => f.status === "paid").length,
-          pending: fees.filter((f) => f.status === "pending").length,
-          overdue: fees.filter((f) => f.status === "overdue").length,
-        },
-      })
+      setDashboardStats(dashboardRes.data?.data)
+      setUserStats(userRes.data?.data)
+      setCourseStats(courseRes.data?.data)
+      setFeeStats(feeRes.data?.data)
+      setPlacementStats(placementRes.data?.data)
     } catch (error) {
       showError("Failed to fetch analytics data")
     } finally {
@@ -62,7 +62,31 @@ const AnalyticsPage = () => {
     }
   }
 
-  if (loading) {
+  // Function to fetch filtered stats
+  const fetchFilteredStats = async (newFilters) => {
+    setLoading(true)
+    try {
+      const [userRes, courseRes] = await Promise.all([
+        analyticsAPI.getUserStats(newFilters),
+        analyticsAPI.getCourseStats(newFilters)
+      ])
+      setUserStats(userRes.data?.data)
+      setCourseStats(courseRes.data?.data)
+    } catch (error) {
+      showError("Failed to fetch filtered data")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Handle filter changes
+  const handleFilterChange = (key, value) => {
+    const newFilters = { ...filters, [key]: value }
+    setFilters(newFilters)
+    fetchFilteredStats(newFilters)
+  }
+
+  if (loading || !dashboardStats) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -72,10 +96,43 @@ const AnalyticsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400">Overview of system metrics and performance</p>
+      
+      {/* Filters */}
+      <div className="card p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <select 
+            value={filters.branch}
+            onChange={(e) => handleFilterChange('branch', e.target.value)}
+            className="input-field"
+          >
+            <option value="">All Branches</option>
+            {courseStats?.byBranch?.map(b => (
+              <option key={b._id} value={b._id}>{b._id}</option>
+            ))}
+          </select>
+
+          <select 
+            value={filters.semester}
+            onChange={(e) => handleFilterChange('semester', e.target.value)}
+            className="input-field"
+          >
+            <option value="">All Semesters</option>
+            {courseStats?.bySemester?.map(s => (
+              <option key={s._id} value={s._id}>Semester {s._id}</option>
+            ))}
+          </select>
+
+          <select 
+            value={filters.role}
+            onChange={(e) => handleFilterChange('role', e.target.value)}
+            className="input-field"
+          >
+            <option value="">All Roles</option>
+            {userStats?.byRole?.map(r => (
+              <option key={r._id} value={r._id}>{r._id}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Main Stats */}
@@ -87,7 +144,12 @@ const AnalyticsPage = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{analytics.users.total}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {dashboardStats.users.total}
+              </p>
+              <p className="text-xs text-gray-500">
+                {dashboardStats.users.students} students, {dashboardStats.users.faculty} faculty
+              </p>
             </div>
           </div>
         </div>
@@ -98,8 +160,13 @@ const AnalyticsPage = () => {
               <BookOpen className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Courses</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{analytics.courses.active}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Courses</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {dashboardStats.courses}
+              </p>
+              <p className="text-xs text-gray-500">
+                {courseStats?.enrollments?.avgEnrollment.toFixed(1)} avg enrollments
+              </p>
             </div>
           </div>
         </div>
@@ -111,7 +178,12 @@ const AnalyticsPage = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Placements</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{analytics.placements.total}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {dashboardStats.placements}
+              </p>
+              <p className="text-xs text-gray-500">
+                {placementStats?.applicationStats?.length} applications
+              </p>
             </div>
           </div>
         </div>
@@ -122,132 +194,12 @@ const AnalyticsPage = () => {
               <DollarSign className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Fee Records</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{analytics.fees.total}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Detailed Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* User Distribution */}
-        <div className="card">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-              <Users className="w-5 h-5 mr-2" />
-              User Distribution
-            </h2>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-                  <span className="text-gray-700 dark:text-gray-300">Students</span>
-                </div>
-                <div className="text-right">
-                  <span className="font-semibold text-gray-900 dark:text-white">{analytics.users.students}</span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                    ({((analytics.users.students / analytics.users.total) * 100).toFixed(1)}%)
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
-                  <span className="text-gray-700 dark:text-gray-300">Faculty</span>
-                </div>
-                <div className="text-right">
-                  <span className="font-semibold text-gray-900 dark:text-white">{analytics.users.faculty}</span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                    ({((analytics.users.faculty / analytics.users.total) * 100).toFixed(1)}%)
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
-                  <span className="text-gray-700 dark:text-gray-300">Admins</span>
-                </div>
-                <div className="text-right">
-                  <span className="font-semibold text-gray-900 dark:text-white">{analytics.users.admins}</span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                    ({((analytics.users.admins / analytics.users.total) * 100).toFixed(1)}%)
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Fee Status */}
-        <div className="card">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-              <DollarSign className="w-5 h-5 mr-2" />
-              Fee Status
-            </h2>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-                  <span className="text-gray-700 dark:text-gray-300">Paid</span>
-                </div>
-                <span className="font-semibold text-gray-900 dark:text-white">{analytics.fees.paid}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
-                  <span className="text-gray-700 dark:text-gray-300">Pending</span>
-                </div>
-                <span className="font-semibold text-gray-900 dark:text-white">{analytics.fees.pending}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
-                  <span className="text-gray-700 dark:text-gray-300">Overdue</span>
-                </div>
-                <span className="font-semibold text-gray-900 dark:text-white">{analytics.fees.overdue}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* System Overview */}
-      <div className="card">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-            <BarChart3 className="w-5 h-5 mr-2" />
-            System Overview
-          </h2>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">{analytics.courses.total}</div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Courses</p>
-              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{analytics.courses.active} active</p>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-                {analytics.placements.applications}
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Applications</p>
-              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                Across {analytics.placements.total} placements
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Fee Collection</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                ₹{feeStats?.byStatus?.find(s => s._id === 'paid')?.total?.toLocaleString() || 0}
               </p>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-                {analytics.fees.paid > 0 ? ((analytics.fees.paid / analytics.fees.total) * 100).toFixed(1) : 0}%
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Fee Collection Rate</p>
-              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                {analytics.fees.paid} of {analytics.fees.total} paid
+              <p className="text-xs text-gray-500">
+                {feeStats?.overdue?.count || 0} overdue fees
               </p>
             </div>
           </div>
@@ -255,40 +207,88 @@ const AnalyticsPage = () => {
       </div>
 
       {/* Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="card">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold">Recent Users</h2>
+          </div>
+          <div className="p-4">
+            <div className="space-y-4">
+              {dashboardStats.recent.users.map(user => (
+                <div key={user._id} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{user.name}</p>
+                      <p className="text-sm text-gray-500">{user.email}</p>
+                    </div>
+                  </div>
+                  <span className="text-sm text-gray-500 capitalize">{user.role}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold">Recent Assignments</h2>
+          </div>
+          <div className="p-4">
+            <div className="space-y-4">
+              {dashboardStats.recent.assignments.map(assignment => (
+                <div key={assignment._id} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full">
+                      <ClipboardCheck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{assignment.title}</p>
+                      <p className="text-sm text-gray-500">{assignment.course?.code}</p>
+                    </div>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    Due: {new Date(assignment.dueDate).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Performance Metrics */}
       <div className="card">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+          <h2 className="text-lg font-semibold flex items-center">
             <TrendingUp className="w-5 h-5 mr-2" />
-            Key Metrics
+            Performance Overview
           </h2>
         </div>
         <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {analytics.users.students > 0 ? (analytics.courses.total / analytics.users.students).toFixed(1) : 0}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                {dashboardStats.assignments.submissionRate.toFixed(1)}%
               </div>
-              <p className="text-sm text-blue-700 dark:text-blue-300">Avg Courses per Student</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Assignment Submission Rate</p>
             </div>
-            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {analytics.placements.total > 0
-                  ? (analytics.placements.applications / analytics.placements.total).toFixed(1)
-                  : 0}
+            
+            <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                {courseStats?.enrollments?.avgEnrollment.toFixed(1)}
               </div>
-              <p className="text-sm text-green-700 dark:text-green-300">Avg Applications per Placement</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Average Course Enrollment</p>
             </div>
-            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {analytics.users.faculty > 0 ? (analytics.courses.total / analytics.users.faculty).toFixed(1) : 0}
+            
+            <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                {((feeStats?.byStatus?.find(s => s._id === 'paid')?.count || 0) / 
+                  (feeStats?.byStatus?.reduce((acc, curr) => acc + curr.count, 0) || 1) * 100).toFixed(1)}%
               </div>
-              <p className="text-sm text-purple-700 dark:text-purple-300">Avg Courses per Faculty</p>
-            </div>
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                {analytics.fees.overdue > 0 ? ((analytics.fees.overdue / analytics.fees.total) * 100).toFixed(1) : 0}%
-              </div>
-              <p className="text-sm text-yellow-700 dark:text-yellow-300">Overdue Fee Rate</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Fee Collection Rate</p>
             </div>
           </div>
         </div>

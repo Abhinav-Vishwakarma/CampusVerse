@@ -4,7 +4,7 @@ const path = require("path")
 const fs = require("fs")
 const File = require("../models/File")
 const { body, validationResult } = require("express-validator")
-const { auth } = require("../middleware/auth")
+const { auth, authorize } = require("../middleware/auth")
 
 const router = express.Router()
 
@@ -72,6 +72,7 @@ const upload = multer({
 // @access  Private
 router.post("/upload", 
   auth,
+  authorize("admin", "faculty"),
   upload.single("file"),
   [
     body("type")

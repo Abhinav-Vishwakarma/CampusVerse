@@ -1,28 +1,21 @@
-const express = require("express")
-const router = express.Router()
-const User = require("../models/User")
-const Course = require("../models/Course")
-const Assignment = require("../models/Assignment")
-const Attendance = require("../models/Attendance")
-const Quiz = require("../models/Quiz")
-const Fee = require("../models/Fee")
-const Event = require("../models/Event")
-const Placement = require("../models/Placement")
-const { Note } = require("../models/Note")
+const express = require("express");
+const router = express.Router();
+const User = require("../models/User");
+const Course = require("../models/Course");
+const Assignment = require("../models/Assignment");
+const Attendance = require("../models/Attendance");
+const Quiz = require("../models/Quiz");
+const Fee = require("../models/Fee");
+const Event = require("../models/Event");
+const Placement = require("../models/Placement");
+const { Note } = require("../models/Note");
+const { auth, authorize } = require("../middleware/auth"); // Assuming auth and authorize are exported from auth.js
 
-// Middleware for admin/faculty authorization
-const requireAdminOrFaculty = (req, res, next) => {
-  if (!req.user || !["admin", "faculty"].includes(req.user.role)) {
-    return res.status(403).json({
-      success: false,
-      message: "Access denied. Admin or Faculty role required.",
-    })
-  }
-  next()
-}
+// Middleware for admin/faculty authorization - This line is now a comment
+// because the middleware is applied directly to routes.
 
 // GET /api/analytics/dashboard - System-wide dashboard stats
-router.get("/dashboard", requireAdminOrFaculty, async (req, res) => {
+router.get("/dashboard", [auth, authorize("admin", "faculty")], async (req, res) => {
   try {
     const [
       totalUsers,
@@ -53,32 +46,39 @@ router.get("/dashboard", requireAdminOrFaculty, async (req, res) => {
         .limit(5)
         .populate("course", "name code")
         .select("title course dueDate createdAt"),
-    ])
+    ]);
 
     // Calculate submission rates
-    const assignmentStats = await Assignment.aggregate([
-      { $match: { isActive: true } },
-      {
-        $project: {
-          totalSubmissions: { $size: "$submissions" },
-          totalStudents: { $size: "$course.students" },
+const assignmentStats = await Assignment.aggregate([
+  { $match: { isActive: true } },
+  {
+    $project: {
+      // Use $ifNull to provide an empty array if 'submissions' is missing or null
+      totalSubmissions: { $size: { $ifNull: ["$submissions", []] } },
+      // Use $ifNull to provide an empty array if 'course.students' is missing or null
+      // Note: If 'course' itself can be missing/null before 'course.students',
+      // you might need a nested $ifNull or a $lookup stage to ensure 'course' is there.
+      // Assuming 'course' always exists and 'students' might be missing within it.
+      totalStudents: { $size: { $ifNull: ["$course.students", []] } },
+      // Include other fields if needed for the next stages
+      _id: 1, // Always include _id if you need it later, or explicitly exclude it
+    },
+  },
+  {
+    $group: {
+      _id: null,
+      avgSubmissionRate: {
+        $avg: {
+          $cond: [
+            { $eq: ["$totalStudents", 0] },
+            0,
+            { $divide: ["$totalSubmissions", "$totalStudents"] },
+          ],
         },
       },
-      {
-        $group: {
-          _id: null,
-          avgSubmissionRate: {
-            $avg: {
-              $cond: [
-                { $eq: ["$totalStudents", 0] },
-                0,
-                { $divide: ["$totalSubmissions", "$totalStudents"] },
-              ],
-            },
-          },
-        },
-      },
-    ])
+    },
+  },
+]);
 
     const stats = {
       users: {
@@ -99,32 +99,32 @@ router.get("/dashboard", requireAdminOrFaculty, async (req, res) => {
         users: recentUsers,
         assignments: recentAssignments,
       },
-    }
+    };
 
     res.json({
       success: true,
       data: stats,
-    })
+    });
   } catch (error) {
-    console.error("Dashboard analytics error:", error)
+    console.error("Dashboard analytics error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch dashboard analytics",
       error: error.message,
-    })
+    });
   }
-})
+});
 
 // GET /api/analytics/users - User analytics
-router.get("/users", requireAdminOrFaculty, async (req, res) => {
+router.get("/users", [auth, authorize("admin", "faculty")], async (req, res) => {
   try {
-    const { branch, semester, role } = req.query
+    const { branch, semester, role } = req.query;
 
     // Build filter
-    const filter = { isActive: true }
-    if (branch) filter.branch = branch
-    if (semester) filter.semester = parseInt(semester)
-    if (role) filter.role = role
+    const filter = { isActive: true };
+    if (branch) filter.branch = branch;
+    if (semester) filter.semester = parseInt(semester);
+    if (role) filter.role = role;
 
     const [
       usersByRole,
@@ -158,7 +158,7 @@ router.get("/users", requireAdminOrFaculty, async (req, res) => {
         { $sort: { _id: -1 } },
         { $limit: 30 },
       ]),
-    ])
+    ]);
 
     res.json({
       success: true,
@@ -168,25 +168,25 @@ router.get("/users", requireAdminOrFaculty, async (req, res) => {
         bySemester: usersBySemester,
         recentRegistrations,
       },
-    })
+    });
   } catch (error) {
-    console.error("User analytics error:", error)
+    console.error("User analytics error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch user analytics",
       error: error.message,
-    })
+    });
   }
-})
+});
 
 // GET /api/analytics/courses - Course analytics
-router.get("/courses", requireAdminOrFaculty, async (req, res) => {
+router.get("/courses", [auth, authorize("admin", "faculty")], async (req, res) => {
   try {
-    const { branch, semester } = req.query
+    const { branch, semester } = req.query;
 
-    const filter = { isActive: true }
-    if (branch) filter.branch = branch
-    if (semester) filter.semester = parseInt(semester)
+    const filter = { isActive: true };
+    if (branch) filter.branch = branch;
+    if (semester) filter.semester = parseInt(semester);
 
     const [
       coursesByBranch,
@@ -225,7 +225,7 @@ router.get("/courses", requireAdminOrFaculty, async (req, res) => {
           },
         },
       ]),
-    ])
+    ]);
 
     res.json({
       success: true,
@@ -235,28 +235,28 @@ router.get("/courses", requireAdminOrFaculty, async (req, res) => {
         popular: popularCourses,
         enrollments: courseEnrollments[0] || { totalEnrollments: 0, avgEnrollment: 0 },
       },
-    })
+    });
   } catch (error) {
-    console.error("Course analytics error:", error)
+    console.error("Course analytics error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch course analytics",
       error: error.message,
-    })
+    });
   }
-})
+});
 
 // GET /api/analytics/attendance - Attendance analytics
-router.get("/attendance", requireAdminOrFaculty, async (req, res) => {
+router.get("/attendance", [auth, authorize("admin", "faculty")], async (req, res) => {
   try {
-    const { branch, semester, startDate, endDate } = req.query
+    const { branch, semester, startDate, endDate } = req.query;
 
-    const filter = {}
+    const filter = {};
     if (startDate && endDate) {
       filter.date = {
         $gte: new Date(startDate),
         $lte: new Date(endDate),
-      }
+      };
     }
 
     const [
@@ -334,7 +334,7 @@ router.get("/attendance", requireAdminOrFaculty, async (req, res) => {
         .populate("student", "name admissionNumber")
         .populate("course", "name code")
         .select("student course status date topic"),
-    ])
+    ]);
 
     res.json({
       success: true,
@@ -344,21 +344,21 @@ router.get("/attendance", requireAdminOrFaculty, async (req, res) => {
         byStatus: attendanceByStatus,
         recent: recentAttendance,
       },
-    })
+    });
   } catch (error) {
-    console.error("Attendance analytics error:", error)
+    console.error("Attendance analytics error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch attendance analytics",
       error: error.message,
-    })
+    });
   }
-})
+});
 
 // GET /api/analytics/performance - Performance analytics
-router.get("/performance", requireAdminOrFaculty, async (req, res) => {
+router.get("/performance", [auth, authorize("admin", "faculty")], async (req, res) => {
   try {
-    const { branch, semester } = req.query
+    const { branch, semester } = req.query;
 
     const [
       quizPerformance,
@@ -459,7 +459,7 @@ router.get("/performance", requireAdminOrFaculty, async (req, res) => {
         { $sort: { avgQuizScore: -1 } },
         { $limit: 10 },
       ]),
-    ])
+    ]);
 
     res.json({
       success: true,
@@ -468,19 +468,19 @@ router.get("/performance", requireAdminOrFaculty, async (req, res) => {
         assignment: assignmentPerformance,
         topPerformers,
       },
-    })
+    });
   } catch (error) {
-    console.error("Performance analytics error:", error)
+    console.error("Performance analytics error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch performance analytics",
       error: error.message,
-    })
+    });
   }
-})
+});
 
 // GET /api/analytics/placements - Placement analytics
-router.get("/placements", requireAdminOrFaculty, async (req, res) => {
+router.get("/placements", [auth, authorize("admin", "faculty")], async (req, res) => {
   try {
     const [
       placementsByCompany,
@@ -528,7 +528,7 @@ router.get("/placements", requireAdminOrFaculty, async (req, res) => {
         .sort({ createdAt: -1 })
         .limit(10)
         .select("jobTitle company salary.min salary.max applicationDeadline createdAt"),
-    ])
+    ]);
 
     res.json({
       success: true,
@@ -538,25 +538,25 @@ router.get("/placements", requireAdminOrFaculty, async (req, res) => {
         salaryRanges,
         recent: recentPlacements,
       },
-    })
+    });
   } catch (error) {
-    console.error("Placement analytics error:", error)
+    console.error("Placement analytics error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch placement analytics",
       error: error.message,
-    })
+    });
   }
-})
+});
 
 // GET /api/analytics/fees - Fee analytics
-router.get("/fees", requireAdminOrFaculty, async (req, res) => {
+router.get("/fees", [auth, authorize("admin", "faculty")], async (req, res) => {
   try {
-    const { academicYear, semester } = req.query
+    const { academicYear, semester } = req.query;
 
-    const filter = {}
-    if (academicYear) filter.academicYear = academicYear
-    if (semester) filter.semester = parseInt(semester)
+    const filter = {};
+    if (academicYear) filter.academicYear = academicYear;
+    if (semester) filter.semester = parseInt(semester);
 
     const [
       feesByStatus,
@@ -581,7 +581,7 @@ router.get("/fees", requireAdminOrFaculty, async (req, res) => {
         { $match: { ...filter, status: "overdue" } },
         { $group: { _id: null, count: { $sum: 1 }, totalOverdue: { $sum: "$balance" } } },
       ]),
-    ])
+    ]);
 
     res.json({
       success: true,
@@ -591,49 +591,49 @@ router.get("/fees", requireAdminOrFaculty, async (req, res) => {
         paymentMethods,
         overdue: overdueStats[0] || { count: 0, totalOverdue: 0 },
       },
-    })
+    });
   } catch (error) {
-    console.error("Fee analytics error:", error)
+    console.error("Fee analytics error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch fee analytics",
       error: error.message,
-    })
+    });
   }
-})
+});
 
 // POST /api/analytics/custom-report - Generate custom report
-router.post("/custom-report", requireAdminOrFaculty, async (req, res) => {
+router.post("/custom-report", [auth, authorize("admin", "faculty")], async (req, res) => {
   try {
-    const { reportType, filters = {}, dateRange } = req.body
+    const { reportType, filters = {}, dateRange } = req.body;
 
     if (!reportType) {
       return res.status(400).json({
         success: false,
         message: "Report type is required",
-      })
+      });
     }
 
-    let data = {}
+    let data = {};
 
     switch (reportType) {
       case "user-activity":
-        data = await generateUserActivityReport(filters, dateRange)
-        break
+        data = await generateUserActivityReport(filters, dateRange);
+        break;
       case "course-performance":
-        data = await generateCoursePerformanceReport(filters, dateRange)
-        break
+        data = await generateCoursePerformanceReport(filters, dateRange);
+        break;
       case "attendance-summary":
-        data = await generateAttendanceSummaryReport(filters, dateRange)
-        break
+        data = await generateAttendanceSummaryReport(filters, dateRange);
+        break;
       case "fee-collection":
-        data = await generateFeeCollectionReport(filters, dateRange)
-        break
+        data = await generateFeeCollectionReport(filters, dateRange);
+        break;
       default:
         return res.status(400).json({
           success: false,
           message: "Invalid report type",
-        })
+        });
     }
 
     res.json({
@@ -645,65 +645,65 @@ router.post("/custom-report", requireAdminOrFaculty, async (req, res) => {
         dateRange,
         ...data,
       },
-    })
+    });
   } catch (error) {
-    console.error("Custom report error:", error)
+    console.error("Custom report error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to generate custom report",
       error: error.message,
-    })
+    });
   }
-})
+});
 
 // Helper functions for custom reports
 async function generateUserActivityReport(filters, dateRange) {
   const dateFilter = dateRange
     ? { createdAt: { $gte: new Date(dateRange.start), $lte: new Date(dateRange.end) } }
-    : {}
+    : {};
 
-  const userFilter = { ...dateFilter, isActive: true }
-  if (filters.role) userFilter.role = filters.role
-  if (filters.branch) userFilter.branch = filters.branch
+  const userFilter = { ...dateFilter, isActive: true };
+  if (filters.role) userFilter.role = filters.role;
+  if (filters.branch) userFilter.branch = filters.branch;
 
   const users = await User.find(userFilter)
     .select("name email role branch semester createdAt")
-    .sort({ createdAt: -1 })
+    .sort({ createdAt: -1 });
 
-  return { users, totalCount: users.length }
+  return { users, totalCount: users.length };
 }
 
 async function generateCoursePerformanceReport(filters, dateRange) {
   const courses = await Course.find({ isActive: true })
     .populate("faculty", "name")
-    .select("name code branch semester students faculty")
+    .select("name code branch semester students faculty");
 
-  return { courses, totalCount: courses.length }
+  return { courses, totalCount: courses.length };
 }
 
 async function generateAttendanceSummaryReport(filters, dateRange) {
   const dateFilter = dateRange
     ? { date: { $gte: new Date(dateRange.start), $lte: new Date(dateRange.end) } }
-    : {}
+    : {};
 
   const attendance = await Attendance.find(dateFilter)
     .populate("student", "name admissionNumber branch")
     .populate("course", "name code")
-    .sort({ date: -1 })
+    .sort({ date: -1 });
 
-  return { attendance, totalCount: attendance.length }
+  return { attendance, totalCount: attendance.length };
 }
 
 async function generateFeeCollectionReport(filters, dateRange) {
-  const feeFilter = {}
-  if (filters.academicYear) feeFilter.academicYear = filters.academicYear
-  if (filters.semester) feeFilter.semester = parseInt(filters.semester)
+  const feeFilter = {};
+  if (filters.academicYear) feeFilter.academicYear = filters.academicYear;
+  if (filters.semester) feeFilter.semester = parseInt(filters.semester);
 
   const fees = await Fee.find(feeFilter)
     .populate("student", "name admissionNumber branch")
-    .sort({ createdAt: -1 })
+    .sort({ createdAt: -1 });
 
-  return { fees, totalCount: fees.length }
+  return { fees, totalCount: fees.length };
 }
 
-module.exports = router
+module.exports = router;

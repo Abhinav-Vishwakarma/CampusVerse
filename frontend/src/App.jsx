@@ -36,6 +36,9 @@ import PerformanceTracking from "./pages/Faculty/PerformanceTracking"
 import AIFeeManagement from "./pages/Admin/AIFeeManagement"
 import PlacementManagement from "./pages/Admin/PlacementManagement"
 import NotificationManagement from "./pages/Admin/NotificationManagement"
+import CoursesPage from "./pages/Courses/CoursesPage"
+import QuizzesPage from "./pages/Quiz/QuizzesPage"
+import AttendancePage from "./pages/Attendance/AttendancePage"
 
 function App() {
   const { user, loading } = useAuth()
@@ -81,6 +84,9 @@ function App() {
                         <Route path="/assignments" element={<AssignmentsPage />} />
                         <Route path="/fees" element={<FeeRecordsPage />} />
                         <Route path="/placements" element={<PlacementRecordsPage />} />
+                        <Route path="/quizzes" element={<QuizzesPage />} />
+                        <Route path="/attendance" element={<AttendancePage />} />
+
                       </>
                     )}
 
@@ -92,13 +98,17 @@ function App() {
                         <Route path="/assignments" element={<AssignmentManagement />} />
                         <Route path="/materials" element={<CourseMaterials />} />
                         <Route path="/performance" element={<PerformanceTracking />} />
+                        <Route
+                          path="/notifications"
+                          element={<NotificationManagement />}
+                        />
                       </>
                     )}
 
                     {/* Admin Routes */}
                     {user.role === "admin" && (
                       <>
-                        <Route path="/courses" element={<StudentCoursesPage />} />
+                        <Route path="/courses" element={<CoursesPage />} />
                         <Route path="/users" element={<UserManagement />} />
                         <Route path="/ai-fee-management" element={<AIFeeManagement />} />
                         <Route path="/placement-management" element={<PlacementManagement />} />
@@ -119,6 +129,7 @@ function App() {
                       path="/notifications"
                       element={user.role === "admin" ? <NotificationManagement /> : <NotificationCenter />}
                     />
+
                     <Route path="/fee-management" element={<FeeManagement />} />
                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                   </Routes>

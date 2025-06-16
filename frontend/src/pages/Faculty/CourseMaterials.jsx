@@ -4,6 +4,57 @@ import { useState, useEffect } from "react"
 import { useAuth } from "../../contexts/AuthContext"
 import { useNotification } from "../../contexts/NotificationContext"
 import { Upload, FileText, Download, Trash2, Eye, Plus } from "lucide-react"
+import { coursesAPI } from "../../services/api"
+
+// API helpers (add these in your api.js if not present)
+const API_BASE_URL = "http://localhost:5000/api"
+const authHeaders = () => ({
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+})
+
+const fetchCourses = async () => {
+  const res = await fetch(`${API_BASE_URL}/courses?active=true&limit=100`, {
+    headers: authHeaders(),
+  })
+  return res.json()
+}
+
+const fetchMaterials = async (courseId) => {
+  const res = await fetch(
+    `${API_BASE_URL}/files/type/assignment?course=${courseId}&limit=100`,
+    { headers: authHeaders() }
+  )
+  return res.json()
+}
+
+const uploadMaterial = async (formData) => {
+  const res = await fetch(`${API_BASE_URL}/files/upload`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: formData,
+  })
+  return res.json()
+}
+
+const deleteMaterial = async (fileId) => {
+  const res = await fetch(`${API_BASE_URL}/files/${fileId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  })
+  return res.json()
+}
+
+const downloadMaterial = async (fileId) => {
+  const res = await fetch(`${API_BASE_URL}/files/download/${fileId}`, {
+    method: "GET",
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error("Download failed")
+  const blob = await res.blob()
+  return blob
+}
+
+
 
 const CourseMaterials = () => {
   const { user } = useAuth()
@@ -11,7 +62,10 @@ const CourseMaterials = () => {
   const [materials, setMaterials] = useState([])
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [loading, setLoading] = useState(false)
-
+  const [courses, setCourses] = useState([])
+  const [branches, setBranches] = useState([])
+  const [sections, setSections] = useState([])
+  const [selectedCourse, setSelectedCourse] = useState("")
   const [uploadForm, setUploadForm] = useState({
     course: "",
     branch: "",
@@ -22,61 +76,64 @@ const CourseMaterials = () => {
     description: "",
     file: null,
   })
-
-  const courses = ["B.Tech", "M.Tech", "BCA", "MCA"]
-  const branches = ["Computer Science", "Electronics", "Mechanical", "Civil"]
-  const sections = ["A", "B", "C"]
-
+const BRANCHES = [
+  "CSE", "ECE", "EEE", "ME", "CE", "IT", "BT"
+]
+const SECTIONS = [
+  "A", "B", "C", "D"
+]
+  // Fetch courses on mount
   useEffect(() => {
-    fetchMaterials()
-  }, [])
+    ;(async () => {
+      try {
+        setLoading(true)
+        // Fetch only courses taught by this faculty
+        const res = await coursesAPI.getCourses({ faculty: user.id, active: true, limit: 100 })
+        if (res.data?.courses) {
+          setCourses(res.data.courses)
+        } else {
+          setCourses([])
+        }
+      } catch {
+        showError("Failed to fetch courses")
+      } finally {
+        setLoading(false)
+      }
+    })()
+  }, [user])
 
-  const fetchMaterials = async () => {
+  // Fetch materials when course changes
+  useEffect(() => {
+    if (selectedCourse) {
+      loadMaterials(selectedCourse)
+    } else {
+      setMaterials([])
+    }
+  }, [selectedCourse])
+
+  const loadMaterials = async (courseId) => {
+    setLoading(true)
     try {
-      // Mock materials data
-      const mockMaterials = [
-        {
-          _id: "1",
-          title: "Introduction to Data Structures",
-          course: "B.Tech",
-          branch: "Computer Science",
-          section: "A",
-          subject: "Data Structures",
-          unit: "1",
-          description: "Basic concepts and introduction to data structures",
-          fileName: "ds_intro.pdf",
-          fileSize: "2.5 MB",
-          uploadedAt: "2024-02-10T10:00:00Z",
-          uploadedBy: user?.name || "Faculty",
-        },
-        {
-          _id: "2",
-          title: "Arrays and Linked Lists",
-          course: "B.Tech",
-          branch: "Computer Science",
-          section: "A",
-          subject: "Data Structures",
-          unit: "2",
-          description: "Implementation and operations on arrays and linked lists",
-          fileName: "arrays_linkedlists.pptx",
-          fileSize: "4.1 MB",
-          uploadedAt: "2024-02-12T14:30:00Z",
-          uploadedBy: user?.name || "Faculty",
-        },
-      ]
-
-      setMaterials(mockMaterials)
-    } catch (error) {
+      const res = await fetchMaterials(courseId)
+      if (res.success) {
+        setMaterials(res.data.files)
+      } else {
+        setMaterials([])
+      }
+    } catch {
       showError("Failed to fetch materials")
+      setMaterials([])
+    } finally {
+      setLoading(false)
     }
   }
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0]
     if (file) {
-      if (file.size > 50 * 1024 * 1024) {
-        // 50MB limit
-        showError("File size should be less than 50MB")
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB limit (as per backend)
+        showError("File size should be less than 10MB")
         return
       }
       setUploadForm((prev) => ({ ...prev, file }))
@@ -85,68 +142,84 @@ const CourseMaterials = () => {
 
   const handleUploadSubmit = async (e) => {
     e.preventDefault()
-
-    if (
-      !uploadForm.file ||
-      !uploadForm.course ||
-      !uploadForm.branch ||
-      !uploadForm.section ||
-      !uploadForm.subject ||
-      !uploadForm.unit ||
-      !uploadForm.title
-    ) {
+    const { course, branch, section, subject, unit, title, file } = uploadForm
+    if (!file || !course || !branch || !section || !subject || !unit || !title) {
       showError("Please fill in all required fields")
       return
     }
-
     setLoading(true)
     try {
-      // Mock upload
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("type", "assignment")
+      formData.append("course", course)
+      formData.append("branch", branch)
+      formData.append("semester", courses.find((c) => c._id === course)?.semester || "")
+      formData.append("title", title)
+      formData.append("description", uploadForm.description || "")
+      formData.append("unit", unit)
+      formData.append("subject", subject)
+      // Optionally add section/tags if needed
 
-      const newMaterial = {
-        _id: Date.now().toString(),
-        ...uploadForm,
-        fileName: uploadForm.file.name,
-        fileSize: `${(uploadForm.file.size / (1024 * 1024)).toFixed(1)} MB`,
-        uploadedAt: new Date().toISOString(),
-        uploadedBy: user?.name || "Faculty",
+      const res = await uploadMaterial(formData)
+      if (res.success) {
+        showSuccess("Material uploaded successfully!")
+        setShowUploadForm(false)
+        setUploadForm({
+          course: "",
+          branch: "",
+          section: "",
+          subject: "",
+          unit: "",
+          title: "",
+          description: "",
+          file: null,
+        })
+        loadMaterials(selectedCourse || course)
+      } else {
+        showError(res.message || "Failed to upload material")
       }
-
-      setMaterials((prev) => [newMaterial, ...prev])
-      setUploadForm({
-        course: "",
-        branch: "",
-        section: "",
-        subject: "",
-        unit: "",
-        title: "",
-        description: "",
-        file: null,
-      })
-      setShowUploadForm(false)
-      showSuccess("Material uploaded successfully!")
-    } catch (error) {
+    } catch {
       showError("Failed to upload material")
     } finally {
       setLoading(false)
     }
   }
 
-  const handleDelete = async (materialId) => {
+  const handleDelete = async (fileId) => {
     if (window.confirm("Are you sure you want to delete this material?")) {
+      setLoading(true)
       try {
-        setMaterials((prev) => prev.filter((material) => material._id !== materialId))
-        showSuccess("Material deleted successfully")
-      } catch (error) {
+        const res = await deleteMaterial(fileId)
+        if (res.success) {
+          setMaterials((prev) => prev.filter((m) => m._id !== fileId))
+          showSuccess("Material deleted successfully")
+        } else {
+          showError(res.message || "Failed to delete material")
+        }
+      } catch {
         showError("Failed to delete material")
+      } finally {
+        setLoading(false)
       }
     }
   }
 
-  const handleDownload = (material) => {
-    // Mock download
-    showSuccess(`Downloading ${material.fileName}`)
+  const handleDownload = async (material) => {
+    try {
+      const blob = await downloadMaterial(material._id)
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = material.originalName || material.name
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+      showSuccess(`Downloading ${material.originalName || material.name}`)
+    } catch {
+      showError("Failed to download file")
+    }
   }
 
   const getFileIcon = (fileName) => {
@@ -176,10 +249,32 @@ const CourseMaterials = () => {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Course Materials</h1>
           <p className="text-gray-600 dark:text-gray-400">Upload and manage course materials</p>
         </div>
-        <button onClick={() => setShowUploadForm(true)} className="btn-primary flex items-center space-x-2">
+        <button
+          onClick={() => setShowUploadForm(true)}
+          className="btn-primary flex items-center space-x-2"
+        >
           <Plus className="w-4 h-4" />
           <span>Upload Material</span>
         </button>
+      </div>
+
+      {/* Course Selector */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Select Course to View Materials
+        </label>
+        <select
+          value={selectedCourse}
+          onChange={(e) => setSelectedCourse(e.target.value)}
+          className="input-field"
+        >
+          <option value="">Select Course</option>
+          {courses.map((course) => (
+            <option key={course._id} value={course._id}>
+              {course.name} ({course.code})
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Materials List */}
@@ -188,46 +283,50 @@ const CourseMaterials = () => {
           <div key={material._id} className="card p-6">
             <div className="flex items-start justify-between">
               <div className="flex items-start space-x-4 flex-1">
-                <div className="text-3xl">{getFileIcon(material.fileName)}</div>
+                <div className="text-3xl">{getFileIcon(material.originalName || material.name)}</div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{material.title}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    {material.title || material.originalName || material.name}
+                  </h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-3">{material.description}</p>
-
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
                     <div>
-                      <span className="font-medium">Course:</span> {material.course}
+                      <span className="font-medium">Course:</span>{" "}
+                      {material.metadata?.course?.name || ""}
                     </div>
                     <div>
-                      <span className="font-medium">Branch:</span> {material.branch}
+                      <span className="font-medium">Branch:</span>{" "}
+                      {material.metadata?.branch || ""}
                     </div>
                     <div>
-                      <span className="font-medium">Section:</span> {material.section}
+                      <span className="font-medium">Unit:</span>{" "}
+                      {material.metadata?.unit || ""}
                     </div>
                     <div>
-                      <span className="font-medium">Subject:</span> {material.subject}
-                    </div>
-                    <div>
-                      <span className="font-medium">Unit:</span> {material.unit}
-                    </div>
-                    <div>
-                      <span className="font-medium">File Size:</span> {material.fileSize}
+                      <span className="font-medium">File Size:</span>{" "}
+                      {material.size
+                        ? `${(material.size / (1024 * 1024)).toFixed(1)} MB`
+                        : ""}
                     </div>
                     <div>
                       <span className="font-medium">Uploaded:</span>{" "}
-                      {new Date(material.uploadedAt).toLocaleDateString()}
+                      {material.createdAt
+                        ? new Date(material.createdAt).toLocaleDateString()
+                        : ""}
                     </div>
                     <div>
-                      <span className="font-medium">By:</span> {material.uploadedBy}
+                      <span className="font-medium">By:</span>{" "}
+                      {material.uploadedBy?.name || ""}
                     </div>
                   </div>
-
                   <div className="flex items-center space-x-2">
                     <FileText className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{material.fileName}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {material.originalName || material.name}
+                    </span>
                   </div>
                 </div>
               </div>
-
               <div className="flex space-x-2">
                 <button
                   onClick={() => handleDownload(material)}
@@ -236,7 +335,7 @@ const CourseMaterials = () => {
                   <Download className="w-3 h-3" />
                   <span>Download</span>
                 </button>
-                <button className="btn-secondary text-xs flex items-center space-x-1">
+                <button className="btn-secondary text-xs flex items-center space-x-1" disabled>
                   <Eye className="w-3 h-3" />
                   <span>Preview</span>
                 </button>
@@ -253,11 +352,15 @@ const CourseMaterials = () => {
         ))}
       </div>
 
-      {materials.length === 0 && (
+      {materials.length === 0 && selectedCourse && (
         <div className="text-center py-12">
           <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No materials uploaded</h3>
-          <p className="text-gray-600 dark:text-gray-400">Upload your first course material to get started.</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            No materials uploaded
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400">
+            Upload your first course material to get started.
+          </p>
         </div>
       )}
 
@@ -265,12 +368,15 @@ const CourseMaterials = () => {
       {showUploadForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upload Course Material</h3>
-
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Upload Course Material
+            </h3>
             <form onSubmit={handleUploadSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Course *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Course *
+                  </label>
                   <select
                     value={uploadForm.course}
                     onChange={(e) => setUploadForm((prev) => ({ ...prev, course: e.target.value }))}
@@ -279,15 +385,16 @@ const CourseMaterials = () => {
                   >
                     <option value="">Select Course</option>
                     {courses.map((course) => (
-                      <option key={course} value={course}>
-                        {course}
+                      <option key={course._id} value={course._id}>
+                        {course.name} ({course.code})
                       </option>
                     ))}
                   </select>
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Branch *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Branch *
+                  </label>
                   <select
                     value={uploadForm.branch}
                     onChange={(e) => setUploadForm((prev) => ({ ...prev, branch: e.target.value }))}
@@ -295,16 +402,17 @@ const CourseMaterials = () => {
                     required
                   >
                     <option value="">Select Branch</option>
-                    {branches.map((branch) => (
+                    {BRANCHES.map((branch) => (
                       <option key={branch} value={branch}>
                         {branch}
                       </option>
                     ))}
                   </select>
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Section *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Section *
+                  </label>
                   <select
                     value={uploadForm.section}
                     onChange={(e) => setUploadForm((prev) => ({ ...prev, section: e.target.value }))}
@@ -312,7 +420,7 @@ const CourseMaterials = () => {
                     required
                   >
                     <option value="">Select Section</option>
-                    {sections.map((section) => (
+                    {SECTIONS.map((section) => (
                       <option key={section} value={section}>
                         Section {section}
                       </option>
@@ -320,10 +428,11 @@ const CourseMaterials = () => {
                   </select>
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Subject *
+                  </label>
                   <input
                     type="text"
                     value={uploadForm.subject}
@@ -333,9 +442,10 @@ const CourseMaterials = () => {
                     required
                   />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Unit *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Unit *
+                  </label>
                   <input
                     type="text"
                     value={uploadForm.unit}
@@ -346,9 +456,10 @@ const CourseMaterials = () => {
                   />
                 </div>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Title *
+                </label>
                 <input
                   type="text"
                   value={uploadForm.title}
@@ -358,9 +469,10 @@ const CourseMaterials = () => {
                   required
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Description
+                </label>
                 <textarea
                   value={uploadForm.description}
                   onChange={(e) => setUploadForm((prev) => ({ ...prev, description: e.target.value }))}
@@ -369,9 +481,10 @@ const CourseMaterials = () => {
                   placeholder="Enter material description"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload File *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Upload File *
+                </label>
                 <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
                   <div className="text-center">
                     <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -387,7 +500,9 @@ const CourseMaterials = () => {
                       </label>
                       <p className="pl-1">or drag and drop</p>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">PDF, DOC, PPT, XLS, TXT up to 50MB</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      PDF, DOC, PPT, XLS, TXT up to 10MB
+                    </p>
                     {uploadForm.file && (
                       <p className="mt-2 text-sm text-green-600 dark:text-green-400">
                         Selected: {uploadForm.file.name}
@@ -396,9 +511,12 @@ const CourseMaterials = () => {
                   </div>
                 </div>
               </div>
-
               <div className="flex space-x-3">
-                <button type="button" onClick={() => setShowUploadForm(false)} className="btn-secondary flex-1">
+                <button
+                  type="button"
+                  onClick={() => setShowUploadForm(false)}
+                  className="btn-secondary flex-1"
+                >
                   Cancel
                 </button>
                 <button

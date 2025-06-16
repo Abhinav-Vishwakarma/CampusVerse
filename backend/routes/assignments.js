@@ -20,6 +20,7 @@ router.get(
     query("status").optional().isIn(["active", "expired", "all"]),
   ],
   async (req, res) => {
+    console.log(req.query)
     try {
       const errors = validationResult(req)
       if (!errors.isEmpty()) {

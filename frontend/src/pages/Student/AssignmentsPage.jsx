@@ -3,7 +3,17 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "../../contexts/AuthContext"
 import { useNotification } from "../../contexts/NotificationContext"
-import { Upload, FileText, Calendar, Clock, CheckCircle, AlertCircle, Download } from "lucide-react"
+import { assignmentsAPI, fileAPI } from "../../services/api"
+import {
+  Upload,
+  FileText,
+  Calendar,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Download,
+  Eye,
+} from "lucide-react"
 
 const AssignmentsPage = () => {
   const { user } = useAuth()
@@ -13,52 +23,20 @@ const AssignmentsPage = () => {
   const [submissionText, setSubmissionText] = useState("")
   const [activeAssignment, setActiveAssignment] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
     fetchAssignments()
+    // eslint-disable-next-line
   }, [])
 
   const fetchAssignments = async () => {
+    setLoading(true)
     try {
-      // Mock assignments data
-      const mockAssignments = [
-        {
-          _id: "1",
-          title: "Data Structures Implementation",
-          subject: "Data Structures",
-          description: "Implement Binary Search Tree with all operations",
-          dueDate: "2024-02-15",
-          maxMarks: 10,
-          submittedAt: null,
-          status: "pending",
-          attachments: ["assignment1.pdf"],
-        },
-        {
-          _id: "2",
-          title: "Database Design Project",
-          subject: "DBMS",
-          description: "Design a complete database for library management system",
-          dueDate: "2024-02-10",
-          maxMarks: 10,
-          submittedAt: "2024-02-08",
-          status: "submitted",
-          score: 8,
-          attachments: ["db_project.pdf"],
-        },
-        {
-          _id: "3",
-          title: "Network Protocol Analysis",
-          subject: "Computer Networks",
-          description: "Analyze TCP/IP protocol stack and create a detailed report",
-          dueDate: "2024-02-20",
-          maxMarks: 10,
-          submittedAt: null,
-          status: "pending",
-          attachments: ["network_assignment.pdf"],
-        },
-      ]
-
-      setAssignments(mockAssignments)
+      // Use API to fetch assignments for the logged-in student
+      const res = await assignmentsAPI.getStudentAssignments(user.id)
+      setAssignments(res.data?.assignments || [])
     } catch (error) {
       showError("Failed to fetch assignments")
     } finally {
@@ -70,7 +48,6 @@ const AssignmentsPage = () => {
     const file = event.target.files[0]
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
-        // 10MB limit
         showError("File size should be less than 10MB")
         return
       }
@@ -83,27 +60,35 @@ const AssignmentsPage = () => {
       showError("Please upload a file or provide submission text")
       return
     }
-
+    setSubmitting(true)
     try {
-      // Mock submission
-      setAssignments((prev) =>
-        prev.map((assignment) =>
-          assignment._id === assignmentId
-            ? {
-                ...assignment,
-                status: "submitted",
-                submittedAt: new Date().toISOString(),
-              }
-            : assignment,
-        ),
-      )
-
+      let attachments = []
+      if (selectedFile) {
+        // Upload file and get attachment URL or ID
+        const uploadRes = await fileAPI.uploadFile(selectedFile, "assignment")
+        if (uploadRes.data?.file) {
+          attachments.push(uploadRes.data.file)
+        } else if (uploadRes.data?.files?.[0]) {
+          attachments.push(uploadRes.data.files[0])
+        }
+      }
+      await assignmentsAPI.submitAssignment(assignmentId, {
+        submissionText: submissionText.trim(),
+        attachments,
+      })
+      showSuccess("Assignment submitted successfully!")
       setActiveAssignment(null)
       setSelectedFile(null)
       setSubmissionText("")
-      showSuccess("Assignment submitted successfully!")
+      fetchAssignments()
     } catch (error) {
-      showError("Failed to submit assignment")
+      showError(
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to submit assignment"
+      )
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -137,6 +122,72 @@ const AssignmentsPage = () => {
     return new Date(dueDate) < new Date()
   }
 
+  // Download assignment attachment
+  const handleDownload = async (fileId) => {
+    setDownloading(true)
+    try {
+      await fileAPI.downloadNote(fileId)
+      showSuccess("Download started")
+    } catch (error) {
+      showError("Failed to download file")
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  // Assignment details modal
+  const AssignmentDetailsModal = ({ assignment, onClose }) => (
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg relative">
+        <button
+          className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          ×
+        </button>
+        <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{assignment.title}</h2>
+        <div className="mb-2 text-gray-700 dark:text-gray-300">{assignment.description}</div>
+        <div className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+          <Calendar className="inline w-4 h-4 mr-1" />
+          Due: {new Date(assignment.dueDate).toLocaleDateString()}
+        </div>
+        <div className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+          <FileText className="inline w-4 h-4 mr-1" />
+          Max Marks: {assignment.totalMarks}
+        </div>
+        {assignment.instructions && (
+          <div className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+            <b>Instructions:</b> {assignment.instructions}
+          </div>
+        )}
+        {assignment.attachments?.length > 0 && (
+          <div className="mb-2">
+            <b>Attachments:</b>
+            <ul>
+              {assignment.attachments.map((file, idx) => (
+                <li key={idx}>
+                  <button
+                    className="btn-secondary text-xs flex items-center space-x-1"
+                    onClick={() => handleDownload(file._id || file)}
+                  >
+                    <Download className="w-3 h-3" />
+                    <span>Download</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <button className="btn-secondary mt-4" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    </div>
+  )
+
+  const [detailsAssignment, setDetailsAssignment] = useState(null)
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -156,8 +207,12 @@ const AssignmentsPage = () => {
       {/* Assignments List */}
       <div className="space-y-4">
         {assignments.map((assignment) => {
-          const overdue = isOverdue(assignment.dueDate) && assignment.status === "pending"
-          const actualStatus = overdue ? "overdue" : assignment.status
+          const overdue = isOverdue(assignment.dueDate) && !assignment.hasSubmitted
+          const actualStatus = assignment.hasSubmitted
+            ? "submitted"
+            : overdue
+              ? "overdue"
+              : "pending"
 
           return (
             <div key={assignment._id} className="card p-6">
@@ -172,7 +227,9 @@ const AssignmentsPage = () => {
                       <span className="capitalize">{actualStatus}</span>
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{assignment.subject}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    {assignment.course?.name || assignment.subject}
+                  </p>
                   <p className="text-gray-700 dark:text-gray-300 mb-3">{assignment.description}</p>
 
                   <div className="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
@@ -182,35 +239,56 @@ const AssignmentsPage = () => {
                     </div>
                     <div className="flex items-center space-x-1">
                       <FileText className="w-4 h-4" />
-                      <span>Max Marks: {assignment.maxMarks}</span>
+                      <span>Max Marks: {assignment.totalMarks}</span>
                     </div>
-                    {assignment.submittedAt && (
+                    {assignment.hasSubmitted && assignment.submissionStatus?.submittedAt && (
                       <div className="flex items-center space-x-1">
                         <CheckCircle className="w-4 h-4" />
-                        <span>Submitted: {new Date(assignment.submittedAt).toLocaleDateString()}</span>
+                        <span>
+                          Submitted: {new Date(assignment.submissionStatus.submittedAt).toLocaleDateString()}
+                        </span>
                       </div>
                     )}
                   </div>
 
-                  {assignment.score && (
+                  {assignment.submissionStatus?.marks !== undefined && (
                     <div className="mt-2">
                       <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                        Score: {assignment.score}/{assignment.maxMarks}
+                        Score: {assignment.submissionStatus.marks}/{assignment.totalMarks}
                       </span>
+                      {assignment.submissionStatus.feedback && (
+                        <span className="ml-4 text-sm text-blue-600 dark:text-blue-400">
+                          Feedback: {assignment.submissionStatus.feedback}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
 
                 <div className="flex flex-col space-y-2">
                   {assignment.attachments?.map((attachment, index) => (
-                    <button key={index} className="btn-secondary text-xs flex items-center space-x-1">
+                    <button
+                      key={index}
+                      className="btn-secondary text-xs flex items-center space-x-1"
+                      onClick={() => handleDownload(attachment._id || attachment)}
+                      disabled={downloading}
+                    >
                       <Download className="w-3 h-3" />
                       <span>Download</span>
                     </button>
                   ))}
-
-                  {assignment.status === "pending" && (
-                    <button onClick={() => setActiveAssignment(assignment._id)} className="btn-primary text-xs">
+                  <button
+                    className="btn-secondary text-xs flex items-center space-x-1"
+                    onClick={() => setDetailsAssignment(assignment)}
+                  >
+                    <Eye className="w-3 h-3" />
+                    <span>Details</span>
+                  </button>
+                  {!assignment.hasSubmitted && actualStatus !== "overdue" && (
+                    <button
+                      onClick={() => setActiveAssignment(assignment._id)}
+                      className="btn-primary text-xs"
+                    >
                       Submit
                     </button>
                   )}
@@ -221,7 +299,6 @@ const AssignmentsPage = () => {
               {activeAssignment === assignment._id && (
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
                   <h4 className="font-medium text-gray-900 dark:text-white mb-3">Submit Assignment</h4>
-
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -264,15 +341,17 @@ const AssignmentsPage = () => {
                           setSubmissionText("")
                         }}
                         className="btn-secondary"
+                        disabled={submitting}
                       >
                         Cancel
                       </button>
                       <button
                         onClick={() => handleSubmission(assignment._id)}
                         className="btn-primary flex items-center space-x-2"
+                        disabled={submitting}
                       >
                         <Upload className="w-4 h-4" />
-                        <span>Submit Assignment</span>
+                        <span>{submitting ? "Submitting..." : "Submit Assignment"}</span>
                       </button>
                     </div>
                   </div>
@@ -289,6 +368,14 @@ const AssignmentsPage = () => {
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No assignments found</h3>
           <p className="text-gray-600 dark:text-gray-400">Your assignments will appear here when they are assigned.</p>
         </div>
+      )}
+
+      {/* Assignment Details Modal */}
+      {detailsAssignment && (
+        <AssignmentDetailsModal
+          assignment={detailsAssignment}
+          onClose={() => setDetailsAssignment(null)}
+        />
       )}
     </div>
   )

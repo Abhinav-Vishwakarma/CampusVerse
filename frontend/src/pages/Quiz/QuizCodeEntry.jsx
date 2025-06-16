@@ -58,7 +58,7 @@ const QuizCodeEntry = () => {
               name="code"
               type="text"
               required
-              maxLength={4}
+              maxLength={6}
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               className="appearance-none relative block w-full px-3 py-4 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center text-2xl font-mono tracking-widest"
@@ -69,7 +69,7 @@ const QuizCodeEntry = () => {
           <div>
             <button
               type="submit"
-              disabled={loading || code.length !== 4}
+              disabled={loading || code.length !== 6}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? (
@@ -100,7 +100,7 @@ const QuizCodeEntry = () => {
         <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
           <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Instructions:</h3>
           <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
-            <li>• Enter the exact 4-character code provided by your instructor</li>
+            <li>• Enter the exact 6-character code provided by your instructor</li>
             <li>• Make sure you're within the quiz time window</li>
             <li>• Ensure you have a stable internet connection</li>
             <li>• You cannot pause the quiz once started</li>

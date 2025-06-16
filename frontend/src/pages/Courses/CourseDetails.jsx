@@ -22,10 +22,13 @@ const CourseDetails = () => {
 
   const fetchCourse = async () => {
     try {
+      setLoading(true)
       const response = await coursesAPI.getCourse(id)
-      setCourse(response.data)
+      if (response?.data?.success) {
+        setCourse(response.data.course)
+      }
     } catch (error) {
-      showError("Failed to fetch course details")
+      showError(error.response?.data?.message || "Failed to fetch course details")
       navigate("/courses")
     } finally {
       setLoading(false)
@@ -34,11 +37,25 @@ const CourseDetails = () => {
 
   const handleEnroll = async () => {
     try {
-      await coursesAPI.enrollInCourse(id)
-      showSuccess("Successfully enrolled in course!")
-      fetchCourse()
+      const response = await coursesAPI.enrollStudent(id, user.id)
+      if (response?.data?.success) {
+        showSuccess("Successfully enrolled in course!")
+        fetchCourse()
+      }
     } catch (error) {
-      showError("Failed to enroll in course")
+      showError(error.response?.data?.message || "Failed to enroll in course")
+    }
+  }
+
+  const handleUnenroll = async () => {
+    try {
+      const response = await coursesAPI.unenrollStudent(id, user.id)
+      if (response?.data?.success) {
+        showSuccess("Successfully unenrolled from course!")
+        fetchCourse()
+      }
+    } catch (error) {
+      showError(error.response?.data?.message || "Failed to unenroll from course")
     }
   }
 
@@ -79,6 +96,11 @@ const CourseDetails = () => {
         {user?.role === "student" && !course.students?.includes(user._id) && (
           <button onClick={handleEnroll} className="btn-primary">
             Enroll Now
+          </button>
+        )}
+        {user?.role === "student" && course.students?.includes(user._id) && (
+          <button onClick={handleUnenroll} className="btn-secondary">
+            Unenroll
           </button>
         )}
       </div>

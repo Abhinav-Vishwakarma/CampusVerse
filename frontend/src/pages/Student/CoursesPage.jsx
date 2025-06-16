@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "../../contexts/AuthContext"
 import { useNotification } from "../../contexts/NotificationContext"
-import { BookOpen, Users, Clock, Star, CheckCircle, Plus } from "lucide-react"
+import { BookOpen, Users, Clock, Star, CheckCircle, Plus, X } from "lucide-react"
+import { coursesAPI } from "../../services/api"
 
 const StudentCoursesPage = () => {
   const { user } = useAuth()
@@ -12,89 +13,62 @@ const StudentCoursesPage = () => {
   const [enrolledCourses, setEnrolledCourses] = useState([])
   const [availableCourses, setAvailableCourses] = useState([])
   const [loading, setLoading] = useState(true)
+  const [viewCourse, setViewCourse] = useState(null)
 
   useEffect(() => {
-    fetchCourses()
-  }, [])
+    if (user?.id) fetchCourses()
+    // eslint-disable-next-line
+  }, [user])
 
+  // Fetch enrolled and available courses from backend
   const fetchCourses = async () => {
+    setLoading(true)
     try {
-      // Mock data for enrolled courses
-      const mockEnrolledCourses = [
-        {
-          _id: "1",
-          name: "Data Structures and Algorithms",
-          code: "CS301",
-          instructor: "Dr. Smith",
-          progress: 75,
-          type: "semester",
-          branch: "Computer Science",
-          semester: "5th",
-          credits: 4,
+      // 1. Enrolled courses (student's courses)
+      const enrolledRes = await coursesAPI.getStudentCourses(user.id)
+      setEnrolledCourses(
+        (enrolledRes.data?.courses || []).map((course) => ({
+          ...course,
+          instructor: course.faculty?.name || "",
           enrolled: true,
-        },
-        {
-          _id: "2",
-          name: "Database Management Systems",
-          code: "CS302",
-          instructor: "Prof. Johnson",
-          progress: 60,
-          type: "semester",
-          branch: "Computer Science",
-          semester: "5th",
-          credits: 3,
-          enrolled: true,
-        },
-      ]
+        }))
+      )
 
-      // Mock data for available courses
-      const mockAvailableCourses = [
-        {
-          _id: "3",
-          name: "React Development Masterclass",
-          code: "UDEMY001",
-          instructor: "John Doe",
-          rating: 4.8,
-          students: 1250,
-          type: "udemy",
-          category: "Web Development",
-          duration: "40 hours",
-          price: "Free",
-        },
-        {
-          _id: "4",
-          name: "Machine Learning Fundamentals",
-          code: "COURSE001",
-          instructor: "Dr. AI Expert",
-          rating: 4.9,
-          students: 890,
-          type: "external",
-          category: "AI/ML",
-          duration: "60 hours",
-          price: "₹2999",
-        },
-      ]
-
-      setEnrolledCourses(mockEnrolledCourses)
-      setAvailableCourses(mockAvailableCourses)
+      // 2. Available courses (all active courses not enrolled by student)
+      const allRes = await coursesAPI.getCourses({ active: true, limit: 100 })
+      const enrolledIds = new Set((enrolledRes.data?.courses || []).map((c) => c._id))
+      setAvailableCourses(
+        (allRes.data?.courses || [])
+          .filter((course) => !enrolledIds.has(course._id))
+          .map((course) => ({
+            ...course,
+            instructor: course.faculty?.name || "",
+            rating: 4.5, // Placeholder, update if you have ratings
+            students: course.students?.length || 0,
+            type: "semester",
+            category: course.branch,
+            duration: "N/A",
+            price: "Free",
+          }))
+      )
     } catch (error) {
-      showError("Failed to fetch courses")
+      showError(error.message || "Failed to fetch courses")
     } finally {
       setLoading(false)
     }
   }
 
+  // Enroll in a course using backend API
   const handleEnrollment = async (courseId) => {
     try {
-      // Mock enrollment
-      const course = availableCourses.find((c) => c._id === courseId)
-      if (course) {
-        setEnrolledCourses((prev) => [...prev, { ...course, enrolled: true, progress: 0 }])
-        setAvailableCourses((prev) => prev.filter((c) => c._id !== courseId))
-        showSuccess(`Successfully enrolled in ${course.name}`)
-      }
+      setLoading(true)
+      await coursesAPI.enrollStudent(courseId, user.id)
+      showSuccess("Successfully enrolled in course!")
+      fetchCourses()
     } catch (error) {
-      showError("Failed to enroll in course")
+      showError(error.message || "Failed to enroll in course")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -109,57 +83,35 @@ const StudentCoursesPage = () => {
             </div>
             <CheckCircle className="w-5 h-5 text-green-500" />
           </div>
-
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{course.name}</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Instructor: {course.instructor}</p>
-
-          {course.type === "semester" && (
-            <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400 mb-4">
-              <span>{course.branch}</span>
-              <span>•</span>
-              <span>{course.semester} Semester</span>
-              <span>•</span>
-              <span>{course.credits} Credits</span>
-            </div>
-          )}
-
-          <div className="mb-4">
-            <div className="flex items-center justify-between text-sm mb-1">
-              <span className="text-gray-600 dark:text-gray-400">Progress</span>
-              <span className="font-medium text-gray-900 dark:text-white">{course.progress}%</span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${course.progress}%` }}
-              ></div>
-            </div>
+          <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400 mb-4">
+            <span>{course.branch}</span>
+            <span>•</span>
+            <span>{course.semester} Semester</span>
+            <span>•</span>
+            <span>{course.credits} Credits</span>
           </div>
-
-          <button className="btn-primary w-full">Continue Learning</button>
+          <button
+            className="btn-primary w-full"
+            onClick={() => setViewCourse(course)}
+          >
+            View Details
+          </button>
         </div>
       ))}
+      {enrolledCourses.length === 0 && (
+        <div className="text-center py-12 col-span-full">
+          <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No enrolled courses</h3>
+          <p className="text-gray-600 dark:text-gray-400">Enroll in a course to get started.</p>
+        </div>
+      )}
     </div>
   )
 
   const renderAvailableCourses = () => (
     <div className="space-y-6">
-      {/* Course Categories */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="card p-4 text-center">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">UDEMY Courses</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Professional development courses</p>
-        </div>
-        <div className="card p-4 text-center">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">External Courses</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Industry-relevant training</p>
-        </div>
-        <div className="card p-4 text-center">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Certification</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Professional certifications</p>
-        </div>
-      </div>
-
       {/* Available Courses */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {availableCourses.map((course) => (
@@ -173,10 +125,8 @@ const StudentCoursesPage = () => {
                 {course.price}
               </span>
             </div>
-
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{course.name}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Instructor: {course.instructor}</p>
-
             <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400 mb-4">
               <div className="flex items-center space-x-1">
                 <Star className="w-3 h-3 text-yellow-500 fill-current" />
@@ -191,25 +141,87 @@ const StudentCoursesPage = () => {
                 <span>{course.duration}</span>
               </div>
             </div>
-
             <div className="mb-4">
               <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
                 {course.category}
               </span>
             </div>
-
             <button
               onClick={() => handleEnrollment(course._id)}
               className="btn-primary w-full flex items-center justify-center space-x-2"
+              disabled={loading}
             >
               <Plus className="w-4 h-4" />
               <span>Enroll Now</span>
             </button>
           </div>
         ))}
+        {availableCourses.length === 0 && (
+          <div className="text-center py-12 col-span-full">
+            <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No available courses</h3>
+            <p className="text-gray-600 dark:text-gray-400">All available courses are already enrolled.</p>
+          </div>
+        )}
       </div>
     </div>
   )
+
+  // Course Detail Modal
+  const renderCourseDetailModal = () => {
+    if (!viewCourse) return null
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg relative">
+          <button
+            className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            onClick={() => setViewCourse(null)}
+            aria-label="Close"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{viewCourse.name}</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{viewCourse.description || "No description available."}</p>
+          <div className="mb-2">
+            <span className="font-semibold">Course Code:</span> {viewCourse.code}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Instructor:</span> {viewCourse.instructor}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Branch:</span> {viewCourse.branch}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Semester:</span> {viewCourse.semester}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Credits:</span> {viewCourse.credits}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Section:</span> {viewCourse.section || "-"}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Total Students:</span> {viewCourse.students?.length || 0}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Type:</span> {viewCourse.type || "Semester"}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Category:</span> {viewCourse.category || viewCourse.branch}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Price:</span> {viewCourse.price || "Free"}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Rating:</span> {viewCourse.rating || "N/A"}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Duration:</span> {viewCourse.duration || "N/A"}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
@@ -226,7 +238,6 @@ const StudentCoursesPage = () => {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Courses</h1>
         <p className="text-gray-600 dark:text-gray-400">Manage your enrolled and available courses</p>
       </div>
-
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="-mb-px flex space-x-8">
@@ -252,9 +263,9 @@ const StudentCoursesPage = () => {
           </button>
         </nav>
       </div>
-
       {/* Tab Content */}
       <div className="mt-6">{activeTab === "enrolled" ? renderEnrolledCourses() : renderAvailableCourses()}</div>
+      {renderCourseDetailModal()}
     </div>
   )
 }

@@ -379,7 +379,6 @@ router.get("/overdue", [auth, authorize("admin")], async (req, res) => {
     })
       .populate("student", "name email admissionNumber branch semester phone")
       .sort({ dueDate: 1 })
-
     const totalOverdueAmount = overdueFees.reduce((sum, fee) => sum + fee.balance, 0)
 
     res.json({

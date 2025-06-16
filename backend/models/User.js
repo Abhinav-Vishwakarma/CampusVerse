@@ -58,6 +58,14 @@ const userSchema = new mongoose.Schema({
       return this.role === "student"
     },
   },
+  enrolledCourses: {
+  type: [String], // Array of strings
+  required: function () {
+    return this.role === "student"
+  },
+  default: [], 
+}
+,
   department: {
     type: String,
     required: function () {

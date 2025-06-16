@@ -118,41 +118,53 @@ export const usersAPI = {
 // Courses API
 export const coursesAPI = {
   getCourses: (filters = {}) => {
-    const queryParams = new URLSearchParams(filters).toString()
-    return apiRequest(`/courses${queryParams ? `?${queryParams}` : ""}`)
+    const queryParams = new URLSearchParams()
+    if (filters.branch) queryParams.append('branch', filters.branch)
+    if (filters.semester) queryParams.append('semester', filters.semester)
+    if (filters.faculty) queryParams.append('faculty', filters.faculty)
+    if (filters.active !== undefined) queryParams.append('active', filters.active)
+    if (filters.page) queryParams.append('page', filters.page)
+    if (filters.limit) queryParams.append('limit', filters.limit)
+    
+    return apiRequest(`/courses?${queryParams.toString()}`)
   },
+  getCourse: (id) => 
+    apiRequest(`/courses/${id}`),
 
-  getCourse: (id) => apiRequest(`/courses/${id}`),
-
-  createCourse: (courseData) =>
-    apiRequest("/courses", {
-      method: "POST",
-      body: courseData,
+  createCourse: (data) => 
+    apiRequest('/courses', {
+      method: 'POST',
+      body: data
     }),
 
-  updateCourse: (id, courseData) =>
+  updateCourse: (id, data) => 
     apiRequest(`/courses/${id}`, {
-      method: "PUT",
-      body: courseData,
+      method: 'PUT',
+      body: data
     }),
 
-  deleteCourse: (id) => apiRequest(`/courses/${id}`, { method: "DELETE" }),
+  deleteCourse: (id) => 
+    apiRequest(`/courses/${id}`, {
+      method: 'DELETE'
+    }),
 
-  enrollInCourse: (courseId, studentId) =>
+  enrollStudent: (courseId, studentId) => 
     apiRequest(`/courses/${courseId}/enroll`, {
-      method: "POST",
-      body: { studentId },
+      method: 'POST',
+      body: { studentId }
     }),
 
-  unenrollFromCourse: (courseId, studentId) =>
+  unenrollStudent: (courseId, studentId) => 
     apiRequest(`/courses/${courseId}/unenroll`, {
-      method: "POST",
-      body: { studentId },
+      method: 'POST',
+      body: { studentId }
     }),
 
-  getCourseStudents: (courseId) => apiRequest(`/courses/${courseId}/students`),
+  getCourseStudents: (courseId) => 
+    apiRequest(`/courses/${courseId}/students`),
 
-  getStudentCourses: (studentId) => apiRequest(`/students/${studentId}/courses`),
+  getStudentCourses: (studentId) => 
+    apiRequest(`/courses/students/${studentId}/courses`)
 }
 
 // Quiz API
@@ -201,6 +213,20 @@ export const quizAPI = {
   getQuizAttempts: (quizId) => apiRequest(`/quizzes/${quizId}/attempts`),
 
   generateQuizCode: (quizId) => apiRequest(`/quizzes/${quizId}/generate-code`, { method: "POST" }),
+
+  getQuizResults: (quizId) =>
+    apiRequest(`/quizzes/results/${quizId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }),
+  cancelQuiz: (quizId) =>
+    apiRequest(`/quizzes/cancel/${quizId}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }),
 }
 
 // Attendance API
@@ -276,17 +302,22 @@ export const assignmentsAPI = {
       body: gradeData,
     }),
 
-  getStudentAssignments: (studentId) => apiRequest(`/students/${studentId}/assignments`),
+  getStudentAssignments: (studentId) => apiRequest(`/assignments/students/${studentId}/assignments`),
 
   getAssignmentSubmissions: (assignmentId) => apiRequest(`/assignments/${assignmentId}/submissions`),
 }
 
 // Fees API
 export const feesAPI = {
-  getFees: (filters = {}) => {
-    const queryParams = new URLSearchParams(filters).toString()
-    return apiRequest(`/fees${queryParams ? `?${queryParams}` : ""}`)
-  },
+  // getFees: (filters = {}) => {
+  //   const queryParams = new URLSearchParams(filters).toString()
+  //   return apiRequest(`/fees${queryParams ? `?${queryParams}` : ""}`)
+  // },
+  getFees: (params = {}) =>
+    apiRequest(`/fees?${new URLSearchParams({
+      ...params,
+      timestamp: Date.now() // Prevent caching
+    })}`),
 
   getFee: (id) => apiRequest(`/fees/${id}`),
 
@@ -310,7 +341,7 @@ export const feesAPI = {
       body: paymentData,
     }),
 
-  getStudentFees: (studentId) => apiRequest(`/students/${studentId}/fees`),
+  getStudentFees: (studentId) => apiRequest(`/fees/${studentId}`),
 
   getOverdueFees: () => apiRequest("/fees/overdue"),
 
@@ -428,7 +459,7 @@ export const notesAPI = {
 
   getPYQs: (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString()
-    return apiRequest(`/pyqs${queryParams ? `?${queryParams}` : ""}`)
+    return apiRequest(`/notes/pyqs${queryParams ? `?${queryParams}` : ""}`)
   },
 
   createPYQ: (pyqData) =>

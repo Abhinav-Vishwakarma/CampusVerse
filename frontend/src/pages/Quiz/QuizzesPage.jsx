@@ -21,12 +21,24 @@ const QuizzesPage = () => {
     if (user?.role === "student") {
       fetchAttempts()
     }
+    // eslint-disable-next-line
   }, [])
 
   const fetchQuizzes = async () => {
+    setLoading(true)
     try {
-      const response = await quizAPI.getQuizzes()
-      setQuizzes(response.data)
+      // Student: fetch only available quizzes for their branch/section
+      let filters = {}
+      if (user?.role === "student") {
+        filters = {
+          branch: user.branch,
+          section: user.section,
+          active: true,
+          limit: 50,
+        }
+      }
+      const response = await quizAPI.getQuizzes(filters)
+      setQuizzes(response.data?.quizzes || [])
     } catch (error) {
       showError("Failed to fetch quizzes")
     } finally {
@@ -36,10 +48,11 @@ const QuizzesPage = () => {
 
   const fetchAttempts = async () => {
     try {
-      const response = await quizAPI.getStudentAttempts()
-      setAttempts(response.data)
+      if (!user?._id) return
+      const response = await quizAPI.getStudentAttempts(user._id)
+      setAttempts(response.data?.attempts || [])
     } catch (error) {
-      console.error("Failed to fetch attempts:", error)
+      showError("Failed to fetch attempts")
     }
   }
 
@@ -59,8 +72,13 @@ const QuizzesPage = () => {
     )
   }
 
+  // Only show quizzes that are active and within time window
   const availableQuizzes = quizzes.filter(
-    (quiz) => quiz.isActive && new Date() >= new Date(quiz.startDate) && new Date() <= new Date(quiz.endDate),
+    (quiz) =>
+      quiz.isActive &&
+      new Date() >= new Date(quiz.startDate) &&
+      new Date() <= new Date(quiz.endDate) &&
+      !quiz.hasAttempted // Don't show if already attempted
   )
 
   return (
@@ -158,7 +176,7 @@ const QuizzesPage = () => {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-500 dark:text-gray-400">Questions:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{quiz.questions?.length || 0}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{quiz.questions?.length || quiz.questionsCount || 0}</span>
                 </div>
               </div>
 
@@ -167,10 +185,10 @@ const QuizzesPage = () => {
                   <button
                     onClick={() => handleStartQuiz(quiz._id)}
                     className="btn-primary flex-1 flex items-center justify-center space-x-2"
-                    disabled={!quiz.isActive}
+                    disabled={!quiz.isActive || quiz.hasAttempted}
                   >
                     <Play className="w-4 h-4" />
-                    <span>Start Quiz</span>
+                    <span>{quiz.hasAttempted ? "Attempted" : "Start Quiz"}</span>
                   </button>
                 ) : (
                   <>
@@ -190,53 +208,26 @@ const QuizzesPage = () => {
       {/* Quiz Attempts */}
       {activeTab === "attempts" && user?.role === "student" && (
         <div className="space-y-4">
-          {attempts.map((attempt) => (
-            <div key={attempt._id} className="card p-6">
+          {attempts.map((attempt, idx) => (
+            <div key={idx} className="card p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{attempt.quiz?.title}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Attempted on {new Date(attempt.startTime).toLocaleDateString()}
+                    Attempted on {attempt.attempt?.submittedAt ? new Date(attempt.attempt.submittedAt).toLocaleDateString() : "-"}
                   </p>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {attempt.totalMarksObtained}/{attempt.quiz?.totalMarks}
+                    {attempt.attempt?.score}/{attempt.quiz?.totalMarks}
                   </div>
                   <div
                     className={`text-sm font-medium ${
-                      attempt.isPassed ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                      attempt.attempt?.passed ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                     }`}
                   >
-                    {attempt.percentage}% - {attempt.isPassed ? "Passed" : "Failed"}
+                    {attempt.attempt?.percentage}% - {attempt.attempt?.passed ? "Passed" : "Failed"}
                   </div>
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-500 dark:text-gray-400">Time Spent:</span>
-                  <span className="ml-2 font-medium text-gray-900 dark:text-white">
-                    {Math.floor(attempt.timeSpent / 60)} min {attempt.timeSpent % 60} sec
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-500 dark:text-gray-400">Status:</span>
-                  <span
-                    className={`ml-2 font-medium capitalize ${
-                      attempt.status === "completed"
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-yellow-600 dark:text-yellow-400"
-                    }`}
-                  >
-                    {attempt.status}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-500 dark:text-gray-400">Submitted:</span>
-                  <span className="ml-2 font-medium text-gray-900 dark:text-white">
-                    {new Date(attempt.endTime).toLocaleTimeString()}
-                  </span>
                 </div>
               </div>
             </div>

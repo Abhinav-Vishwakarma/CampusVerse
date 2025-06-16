@@ -24,8 +24,9 @@ const NotesPage = () => {
   const fetchData = async () => {
     try {
       const [notesRes, pyqsRes] = await Promise.all([notesAPI.getNotes(), notesAPI.getPYQs()])
-      setNotes(notesRes.data)
-      setPyqs(pyqsRes.data)
+      setNotes(notesRes.data.data)
+      setPyqs(pyqsRes.data.data)
+      console.log(notes)
     } catch (error) {
       showError("Failed to fetch notes and PYQs")
     } finally {
@@ -81,7 +82,7 @@ const NotesPage = () => {
 
   const filteredNotes = filterItems(notes)
   const filteredPyqs = filterItems(pyqs)
-
+// console.log(filteredNotes)
   return (
     <div className="space-y-6">
       {/* Header */}

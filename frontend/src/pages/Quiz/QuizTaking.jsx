@@ -11,53 +11,43 @@ const QuizTaking = () => {
   const navigate = useNavigate()
   const { showError, showSuccess } = useNotification()
   const [quiz, setQuiz] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [notStarted, setNotStarted] = useState(false)
+  const [timeToStart, setTimeToStart] = useState(0)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState({})
   const [timeLeft, setTimeLeft] = useState(0)
-  const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [attemptId, setAttemptId] = useState(null)
+  const [startTime, setStartTime] = useState(null)
   const timerRef = useRef(null)
+  const startTimerRef = useRef(null)
 
-  useEffect(() => {
-    fetchQuiz()
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-      }
-    }
-  }, [quizId])
-
-  useEffect(() => {
-    if (timeLeft > 0) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            handleSubmit()
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-      }
-    }
-  }, [timeLeft])
-
+  // Fetch quiz and check if not started
   const fetchQuiz = async () => {
+    setLoading(true)
     try {
       const response = await quizAPI.getQuiz(quizId)
-      const quizData = response.data
+      const quizData = response.data?.quiz
+      if (!quizData) throw new Error("Quiz not found")
+      const now = new Date()
+      const start = new Date(quizData.startDate)
+      const end = new Date(quizData.endDate)
+      if (now < start) {
+        setQuiz(quizData)
+        setNotStarted(true)
+        setTimeToStart(Math.max(0, Math.floor((start - now) / 1000)))
+        setLoading(false)
+        return
+      }
+      if (now > end) {
+        showError("Quiz time is over. You cannot attempt this quiz now.")
+        navigate("/quizzes")
+        return
+      }
       setQuiz(quizData)
-      setTimeLeft(quizData.duration * 60) // Convert minutes to seconds
-
-      // Start quiz attempt
-      const attemptResponse = await quizAPI.attemptQuiz(quizId, {})
-      setAttemptId(attemptResponse.data.attemptId)
+      setNotStarted(false)
+      setTimeLeft(quizData.duration * 60)
+      setStartTime(now)
     } catch (error) {
       showError("Failed to load quiz")
       navigate("/quizzes")
@@ -66,47 +56,93 @@ const QuizTaking = () => {
     }
   }
 
-  const handleAnswerChange = (questionId, answer) => {
+  useEffect(() => {
+    fetchQuiz()
+    // eslint-disable-next-line
+  }, [quizId])
+
+  // Timer effect for not started state
+  useEffect(() => {
+    if (notStarted && quiz) {
+      if (startTimerRef.current) clearInterval(startTimerRef.current)
+      startTimerRef.current = setInterval(() => {
+        setTimeToStart((prev) => {
+          if (prev <= 1) {
+            clearInterval(startTimerRef.current)
+            fetchQuiz()
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+      return () => clearInterval(startTimerRef.current)
+    }
+    // eslint-disable-next-line
+  }, [notStarted, quiz])
+
+  // Timer for quiz duration
+  useEffect(() => {
+    if (!notStarted && quiz && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current)
+            handleSubmit()
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+      return () => clearInterval(timerRef.current)
+    }
+    // eslint-disable-next-line
+  }, [notStarted, quiz, timeLeft])
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m}:${s.toString().padStart(2, "0")}`
+  }
+
+  const getTimeColor = () => {
+    if (timeLeft > 300) return "text-green-600"
+    if (timeLeft > 60) return "text-yellow-600"
+    return "text-red-600"
+  }
+
+  const handleAnswerChange = (questionIdx, optionIdx) => {
     setAnswers((prev) => ({
       ...prev,
-      [questionId]: answer,
+      [questionIdx]: optionIdx,
     }))
   }
 
   const handleSubmit = async () => {
     if (submitting) return
-
     setSubmitting(true)
     try {
-      const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => ({
-        question: questionId,
-        selectedOption: answer,
+      const formattedAnswers = quiz.questions.map((q, idx) => ({
+        question: idx,
+        selectedOption: answers[idx] !== undefined ? Number(answers[idx]) : null,
       }))
-
-      await quizAPI.updateAttempt(quizId, attemptId, {
+      // Send startTime and endTime as ISO strings
+      await quizAPI.attemptQuiz(quizId, {
         answers: formattedAnswers,
-        status: "completed",
+        startTime: startTime ? new Date(startTime).toISOString() : new Date().toISOString(),
+        endTime: new Date().toISOString(),
       })
-
       showSuccess("Quiz submitted successfully!")
       navigate("/quizzes")
     } catch (error) {
-      showError("Failed to submit quiz")
+      showError(
+        error?.response?.data?.message ||
+        (error?.response?.data?.errors?.[0]?.msg) ||
+        error.message ||
+        "Failed to submit quiz"
+      )
     } finally {
       setSubmitting(false)
     }
-  }
-
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
-  }
-
-  const getTimeColor = () => {
-    if (timeLeft > 300) return "text-green-600" // > 5 minutes
-    if (timeLeft > 60) return "text-yellow-600" // > 1 minute
-    return "text-red-600" // <= 1 minute
   }
 
   if (loading) {
@@ -117,12 +153,24 @@ const QuizTaking = () => {
     )
   }
 
-  if (!quiz) {
+  if (notStarted && quiz) {
     return (
-      <div className="text-center py-12">
-        <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Quiz not found</h3>
-        <p className="text-gray-600 dark:text-gray-400">The quiz you're looking for doesn't exist or has expired.</p>
+      <div className="flex flex-col items-center justify-center h-96">
+        <AlertTriangle className="w-12 h-12 text-yellow-500 mb-4" />
+        <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Quiz will start at</h2>
+        <div className="text-lg text-gray-700 dark:text-gray-300 mb-2">
+          <Clock className="inline w-5 h-5 mr-2" />
+          {new Date(quiz.startDate).toLocaleString()}
+        </div>
+        <div className="text-md text-blue-600 dark:text-blue-300 mb-4">
+          Starts in: <span className="font-mono">{formatTime(timeToStart)}</span>
+        </div>
+        <button
+          className="btn-primary"
+          onClick={() => navigate("/quizzes")}
+        >
+          Back to Quizzes
+        </button>
       </div>
     )
   }
@@ -175,14 +223,14 @@ const QuizTaking = () => {
                 className="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
               >
                 <input
-                  type={currentQ.questionType === "multiple-choice" ? "radio" : "checkbox"}
-                  name={`question-${currentQ._id}`}
-                  value={option.text}
-                  checked={answers[currentQ._id] === option.text}
-                  onChange={(e) => handleAnswerChange(currentQ._id, e.target.value)}
+                  type="radio"
+                  name={`question-${currentQuestion}`}
+                  value={index}
+                  checked={answers[currentQuestion] === index}
+                  onChange={() => handleAnswerChange(currentQuestion, index)}
                   className="mr-3"
                 />
-                <span className="text-gray-900 dark:text-white">{option.text}</span>
+                <span className="text-gray-900 dark:text-white">{option}</span>
               </label>
             ))}
           </div>
@@ -206,7 +254,7 @@ const QuizTaking = () => {
                 className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
                   index === currentQuestion
                     ? "bg-blue-600 text-white"
-                    : answers[quiz.questions[index]._id]
+                    : answers[index] !== undefined
                       ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                       : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
                 }`}

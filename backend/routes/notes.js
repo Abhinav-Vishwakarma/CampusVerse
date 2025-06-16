@@ -61,30 +61,49 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/notes/:id - Get single note
-router.get('/:id', async (req, res) => {
+// GET /api/notes/pyqs - Get Previous Year Questions
+router.get('/pyqs', async (req, res) => {
   try {
-    const note = await Note.findById(req.params.id)
+    const { 
+      course, 
+      semester, 
+      branch, 
+      year, 
+      examType,
+      page = 1, 
+      limit = 10 
+    } = req.query;
+    
+    let filter = {};
+    
+    if (course) filter.course = course;
+    if (semester) filter.semester = parseInt(semester);
+    if (branch) filter.branch = { $regex: branch, $options: 'i' };
+    if (year) filter.year = parseInt(year);
+    if (examType) filter.examType = examType;
+
+    const pyqs = await PYQ.find(filter)
       .populate('uploadedBy', 'name email')
       .populate('course', 'name')
-      .populate('likes', 'name')
-      .populate('comments.user', 'name');
+      .sort({ year: -1, createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
 
-    if (!note || !note.isActive) {
-      return res.status(404).json({
-        success: false,
-        message: 'Note not found'
-      });
-    }
+    const total = await PYQ.countDocuments(filter);
 
     res.json({
       success: true,
-      data: note
+      data: pyqs,
+      pagination: {
+        current: page,
+        pages: Math.ceil(total / limit),
+        total
+      }
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error fetching note',
+      message: 'Error fetching PYQs',
       error: error.message
     });
   }
@@ -125,6 +144,77 @@ router.post('/', [
     res.status(500).json({
       success: false,
       message: 'Error creating note',
+      error: error.message
+    });
+  }
+});
+
+// POST /api/notes/pyqs - Create new PYQ
+router.post('/pyqs', [
+  body('title').notEmpty().withMessage('Title is required'),
+  body('year').isInt({ min: 2000, max: 2030 }).withMessage('Valid year is required'),
+  body('examType').isIn(['mid-term', 'end-term', 'quiz', 'assignment']).withMessage('Invalid exam type'),
+  body('course').notEmpty().withMessage('Course is required'),
+  body('semester').isInt({ min: 1, max: 8 }).withMessage('Semester must be between 1-8'),
+  body('branch').notEmpty().withMessage('Branch is required'),
+  body('fileUrl').notEmpty().withMessage('File URL is required'),
+  body('uploadedBy').notEmpty().withMessage('Uploaded by user ID is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
+
+    const pyq = new PYQ(req.body);
+    await pyq.save();
+
+    const populatedPYQ = await PYQ.findById(pyq._id)
+      .populate('uploadedBy', 'name email')
+      .populate('course', 'name');
+
+    res.status(201).json({
+      success: true,
+      message: 'PYQ created successfully',
+      data: populatedPYQ
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error creating PYQ',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/notes/:id - Get single note
+router.get('/:id', async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id)
+      .populate('uploadedBy', 'name email')
+      .populate('course', 'name')
+      .populate('likes', 'name')
+      .populate('comments.user', 'name');
+
+    if (!note || !note.isActive) {
+      return res.status(404).json({
+        success: false,
+        message: 'Note not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: note
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching note',
       error: error.message
     });
   }
@@ -185,96 +275,6 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error deleting note',
-      error: error.message
-    });
-  }
-});
-
-// GET /api/notes/pyqs - Get Previous Year Questions
-router.get('/pyqs', async (req, res) => {
-  try {
-    const { 
-      course, 
-      semester, 
-      branch, 
-      year, 
-      examType,
-      page = 1, 
-      limit = 10 
-    } = req.query;
-    
-    let filter = {};
-    
-    if (course) filter.course = course;
-    if (semester) filter.semester = parseInt(semester);
-    if (branch) filter.branch = { $regex: branch, $options: 'i' };
-    if (year) filter.year = parseInt(year);
-    if (examType) filter.examType = examType;
-
-    const pyqs = await PYQ.find(filter)
-      .populate('uploadedBy', 'name email')
-      .populate('course', 'name')
-      .sort({ year: -1, createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-
-    const total = await PYQ.countDocuments(filter);
-
-    res.json({
-      success: true,
-      data: pyqs,
-      pagination: {
-        current: page,
-        pages: Math.ceil(total / limit),
-        total
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching PYQs',
-      error: error.message
-    });
-  }
-});
-
-// POST /api/notes/pyqs - Create new PYQ
-router.post('/pyqs', [
-  body('title').notEmpty().withMessage('Title is required'),
-  body('year').isInt({ min: 2000, max: 2030 }).withMessage('Valid year is required'),
-  body('examType').isIn(['mid-term', 'end-term', 'quiz', 'assignment']).withMessage('Invalid exam type'),
-  body('course').notEmpty().withMessage('Course is required'),
-  body('semester').isInt({ min: 1, max: 8 }).withMessage('Semester must be between 1-8'),
-  body('branch').notEmpty().withMessage('Branch is required'),
-  body('fileUrl').notEmpty().withMessage('File URL is required'),
-  body('uploadedBy').notEmpty().withMessage('Uploaded by user ID is required')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation errors',
-        errors: errors.array()
-      });
-    }
-
-    const pyq = new PYQ(req.body);
-    await pyq.save();
-
-    const populatedPYQ = await PYQ.findById(pyq._id)
-      .populate('uploadedBy', 'name email')
-      .populate('course', 'name');
-
-    res.status(201).json({
-      success: true,
-      message: 'PYQ created successfully',
-      data: populatedPYQ
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error creating PYQ',
       error: error.message
     });
   }

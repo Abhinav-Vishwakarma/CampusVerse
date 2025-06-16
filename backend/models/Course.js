@@ -1,5 +1,15 @@
 const mongoose = require("mongoose")
 
+const COURSE_TYPES = [
+  "Undergraduate",
+  "Postgraduate",
+  "Doctoral",
+  "Diploma",
+  "Vocational",
+  "Bridge", 
+  "Online",
+]
+
 const courseSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -54,6 +64,14 @@ const courseSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  type: {
+    type: String,
+    required: true,
+    enum: COURSE_TYPES,
+    default: "Undergraduate",
+  },
 })
+
+courseSchema.statics.COURSE_TYPES = COURSE_TYPES
 
 module.exports = mongoose.model("Course", courseSchema)

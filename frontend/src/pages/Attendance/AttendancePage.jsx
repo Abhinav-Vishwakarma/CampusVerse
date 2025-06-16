@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "../../contexts/AuthContext"
 import { useNotification } from "../../contexts/NotificationContext"
 import { attendanceAPI, coursesAPI } from "../../services/api"
-import { Calendar, TrendingUp, AlertTriangle, CheckCircle, XCircle } from "lucide-react"
+import { Calendar, TrendingUp, AlertTriangle, CheckCircle, XCircle, Plus, Edit2 } from "lucide-react"
 
 const AttendancePage = () => {
   const { user } = useAuth()
@@ -14,28 +14,40 @@ const AttendancePage = () => {
   const [attendanceData, setAttendanceData] = useState([])
   const [stats, setStats] = useState({})
   const [loading, setLoading] = useState(true)
+  const [showMarkModal, setShowMarkModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editRecord, setEditRecord] = useState(null)
+  const [markForm, setMarkForm] = useState({
+    date: "",
+    topic: "",
+    lecture: 1,
+    students: [],
+  })
 
   useEffect(() => {
     fetchCourses()
+    // eslint-disable-next-line
   }, [])
 
   useEffect(() => {
     if (selectedCourse) {
       fetchAttendance()
     }
+    // eslint-disable-next-line
   }, [selectedCourse])
 
   const fetchCourses = async () => {
     try {
-      const response = await coursesAPI.getCourses()
-      const userCourses =
-        user?.role === "student"
-          ? response.data.filter((course) => course.students?.includes(user._id))
-          : response.data.filter((course) => course.faculty === user._id)
+      const response = await coursesAPI.getStudentCourses(user.id)
+      console.log(response.data.courses)
 
-      setCourses(userCourses)
-      if (userCourses.length > 0) {
-        setSelectedCourse(userCourses[0]._id)
+      // const userCourses = response.data.courses.map((x)=>{
+      //   x
+      // })
+      setCourses(response.data.courses)
+      
+      if (courses.length > 0) {
+        setSelectedCourse(courses[0].name)
       }
     } catch (error) {
       showError("Failed to fetch courses")
@@ -46,34 +58,82 @@ const AttendancePage = () => {
 
   const fetchAttendance = async () => {
     try {
-      const response = await attendanceAPI.getStudentAttendance(user._id, selectedCourse)
-      setAttendanceData(response.data.records || [])
-      setStats(response.data.stats || {})
+      if (user.role === "student") {
+        const response = await attendanceAPI.getStudentAttendance(user.id, selectedCourse)
+        setAttendanceData(response.data.records || [])
+        setStats(response.data.stats || {})
+      } else {
+        // For faculty/admin, get all attendance for the course
+        const response = await attendanceAPI.getCourseAttendance(selectedCourse)
+        setAttendanceData(response.data.records || [])
+        setStats(response.data.overallStats || {})
+      }
     } catch (error) {
       showError("Failed to fetch attendance data")
     }
   }
 
+  // Calculate needed classes for student
   const calculateNeededClasses = async () => {
     try {
       const response = await attendanceAPI.calculateNeeded({
-        studentId: user._id,
         courseId: selectedCourse,
         targetPercentage: 75,
       })
-
-      const { classesNeeded, canSkip } = response.data
-      if (classesNeeded > 0) {
-        showSuccess(`You need to attend ${classesNeeded} more classes to reach 75%`)
-      } else if (canSkip > 0) {
-        showSuccess(`You can skip ${canSkip} classes and still maintain 75%`)
-      } else {
-        showSuccess("You're exactly at the target attendance!")
-      }
+      const { calculation } = response.data
+      showSuccess(calculation.message)
     } catch (error) {
       showError("Failed to calculate needed classes")
     }
   }
+
+  // Mark attendance (faculty/admin)
+  const handleMarkAttendance = async (e) => {
+    e.preventDefault()
+    if (!markForm.date || !markForm.topic || !markForm.lecture || markForm.students.length === 0) {
+      showError("Please fill all fields and select at least one student.")
+      return
+    }
+    try {
+      await attendanceAPI.markAttendance({
+        course: selectedCourse,
+        date: markForm.date,
+        topic: markForm.topic,
+        lecture: markForm.lecture,
+        students: markForm.students,
+      })
+      showSuccess("Attendance marked successfully!")
+      setShowMarkModal(false)
+      fetchAttendance()
+    } catch (error) {
+      showError("Failed to mark attendance")
+    }
+  }
+
+  // Edit attendance (faculty/admin)
+  const handleEditAttendance = async (e) => {
+    e.preventDefault()
+    if (!editRecord) return
+    try {
+      await attendanceAPI.updateAttendance(editRecord._id, {
+        status: editRecord.status,
+        topic: editRecord.topic,
+        lecture: editRecord.lecture,
+      })
+      showSuccess("Attendance updated successfully!")
+      setShowEditModal(false)
+      setEditRecord(null)
+      fetchAttendance()
+    } catch (error) {
+      showError("Failed to update attendance")
+    }
+  }
+
+  // For faculty/admin: get students for selected course
+  const courseStudents =
+    courses.find((c) => c._id === selectedCourse)?.students?.map((s) =>
+      typeof s === "object" ? s : { _id: s, name: s }
+    ) || []
 
   if (loading) {
     return (
@@ -113,6 +173,26 @@ const AttendancePage = () => {
             Calculate Needed Classes
           </button>
         )}
+        {["faculty", "admin"].includes(user?.role) && (
+          <button
+            className="btn-primary flex items-center space-x-2"
+            onClick={() => {
+              setShowMarkModal(true)
+              setMarkForm({
+                date: "",
+                topic: "",
+                lecture: 1,
+                students: courseStudents.map((s) => ({
+                  studentId: s._id,
+                  status: "present",
+                })),
+              })
+            }}
+          >
+            <Plus className="w-4 h-4" />
+            <span>Mark Attendance</span>
+          </button>
+        )}
       </div>
 
       {/* Course Selection */}
@@ -143,7 +223,7 @@ const AttendancePage = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Classes</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalClasses || 0}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalClasses || stats.totalRecords || 0}</p>
               </div>
             </div>
           </div>
@@ -155,7 +235,7 @@ const AttendancePage = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Present</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.presentClasses || 0}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.presentClasses || stats.totalPresent || 0}</p>
               </div>
             </div>
           </div>
@@ -167,7 +247,7 @@ const AttendancePage = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Absent</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.absentClasses || 0}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.absentClasses || stats.totalAbsent || 0}</p>
               </div>
             </div>
           </div>
@@ -179,8 +259,8 @@ const AttendancePage = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Percentage</p>
-                <p className={`text-2xl font-bold ${getAttendanceColor(stats.percentage || 0)}`}>
-                  {(stats.percentage || 0).toFixed(1)}%
+                <p className={`text-2xl font-bold ${getAttendanceColor(stats.percentage || stats.overallPercentage || 0)}`}>
+                  {(stats.percentage || stats.overallPercentage || 0).toFixed(1)}%
                 </p>
               </div>
             </div>
@@ -190,7 +270,7 @@ const AttendancePage = () => {
 
       {/* Attendance Records */}
       <div className="card">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Attendance Records</h2>
         </div>
         <div className="p-6">
@@ -213,6 +293,11 @@ const AttendancePage = () => {
                         })}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{record.topic || "Regular Class"}</p>
+                      {record.student && (user.role === "faculty" || user.role === "admin") && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Student: {record.student.name} ({record.student.admissionNumber})
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="text-right">
@@ -228,7 +313,20 @@ const AttendancePage = () => {
                       {record.status}
                     </span>
                     {record.markedBy && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Marked by {record.markedBy}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Marked by {record.markedBy.name || record.markedBy}
+                      </p>
+                    )}
+                    {["faculty", "admin"].includes(user.role) && (
+                      <button
+                        className="ml-2 text-xs text-blue-600 underline"
+                        onClick={() => {
+                          setEditRecord({ ...record })
+                          setShowEditModal(true)
+                        }}
+                      >
+                        <Edit2 className="w-4 h-4 inline" /> Edit
+                      </button>
                     )}
                   </div>
                 </div>
@@ -247,6 +345,168 @@ const AttendancePage = () => {
           )}
         </div>
       </div>
+
+      {/* Mark Attendance Modal (Faculty/Admin) */}
+      {showMarkModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg relative">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              onClick={() => setShowMarkModal(false)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Mark Attendance</h2>
+            <form onSubmit={handleMarkAttendance} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date</label>
+                <input
+                  type="date"
+                  value={markForm.date}
+                  onChange={e => setMarkForm(f => ({ ...f, date: e.target.value }))}
+                  className="input-field"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topic</label>
+                <input
+                  type="text"
+                  value={markForm.topic}
+                  onChange={e => setMarkForm(f => ({ ...f, topic: e.target.value }))}
+                  className="input-field"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lecture Number</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={markForm.lecture}
+                  onChange={e => setMarkForm(f => ({ ...f, lecture: e.target.value }))}
+                  className="input-field"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Students</label>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {courseStudents.map((student, idx) => (
+                    <div key={student._id} className="flex items-center space-x-2">
+                      <span className="w-36 truncate">{student.name}</span>
+                      <select
+                        value={
+                          markForm.students[idx]?.status || "present"
+                        }
+                        onChange={e => {
+                          const updated = [...markForm.students]
+                          updated[idx] = {
+                            studentId: student._id,
+                            status: e.target.value,
+                          }
+                          setMarkForm(f => ({
+                            ...f,
+                            students: updated,
+                          }))
+                        }}
+                        className="input-field"
+                      >
+                        <option value="present">Present</option>
+                        <option value="absent">Absent</option>
+                        <option value="late">Late</option>
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  className="btn-secondary flex-1"
+                  onClick={() => setShowMarkModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary flex-1"
+                >
+                  Mark Attendance
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Attendance Modal (Faculty/Admin) */}
+      {showEditModal && editRecord && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md relative">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              onClick={() => setShowEditModal(false)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit Attendance</h2>
+            <form onSubmit={handleEditAttendance} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                <select
+                  value={editRecord.status}
+                  onChange={e => setEditRecord(r => ({ ...r, status: e.target.value }))}
+                  className="input-field"
+                  required
+                >
+                  <option value="present">Present</option>
+                  <option value="absent">Absent</option>
+                  <option value="late">Late</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topic</label>
+                <input
+                  type="text"
+                  value={editRecord.topic}
+                  onChange={e => setEditRecord(r => ({ ...r, topic: e.target.value }))}
+                  className="input-field"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lecture Number</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={editRecord.lecture}
+                  onChange={e => setEditRecord(r => ({ ...r, lecture: e.target.value }))}
+                  className="input-field"
+                  required
+                />
+              </div>
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  className="btn-secondary flex-1"
+                  onClick={() => setShowEditModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary flex-1"
+                >
+                  Update
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Attendance Guidelines */}
       <div className="card p-6">
