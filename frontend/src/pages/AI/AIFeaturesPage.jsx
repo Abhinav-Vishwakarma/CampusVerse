@@ -3,10 +3,13 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "../../contexts/AuthContext"
 import { useNotification } from "../../contexts/NotificationContext"
-import { aiAPI, fileAPI } from "../../services/api"
+import { aiAPI } from "../../services/api"
 import {
-  FileText, CheckCircle, Download, Upload, Zap, Map, CreditCard, AlertCircle
+  FileText, CheckCircle, Download, Upload, Zap, Map, CreditCard
 } from "lucide-react"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import rehypeRaw from "rehype-raw"
 
 const AIFeaturesPage = () => {
   const { user } = useAuth()
@@ -52,13 +55,13 @@ const AIFeaturesPage = () => {
 
   // Fetch AI credits on mount
   useEffect(() => {
-    if (user?.id) fetchCredits()
+    if (user?._id || user?.id) fetchCredits()
     // eslint-disable-next-line
   }, [user])
 
   const fetchCredits = async () => {
     try {
-      const res = await aiAPI.getCredits(user.id)
+      const res = await aiAPI.getCredits(user.id || user.id)
       setCredits(res.data?.data?.remainingCredits ?? 0)
     } catch {
       setCredits(0)
@@ -160,7 +163,6 @@ const AIFeaturesPage = () => {
 
   // Resume Generation
   const handleResumeGeneration = async () => {
-    // Validate required fields
     if (
       !resumeForm.personalInfo.name ||
       !resumeForm.personalInfo.email ||
@@ -172,7 +174,7 @@ const AIFeaturesPage = () => {
     setLoading(true)
     try {
       const payload = {
-        userId: user.id,
+        userId: user._id || user.id,
         ...resumeForm,
         skills: resumeForm.skills.filter((s) => s.trim()),
         experience: resumeForm.experience.filter((e) => e.title || e.company),
@@ -181,13 +183,41 @@ const AIFeaturesPage = () => {
         achievements: resumeForm.achievements.filter((a) => a.trim()),
       }
       const res = await aiAPI.generateResume(payload)
-      setGeneratedContent(res.data?.data?.resume)
+      setGeneratedContent(res.data?.data?.resume?.generatedContent || res.data?.data?.resume)
       setCredits(res.data?.data?.creditsRemaining ?? credits)
       showSuccess("Resume generated successfully!")
     } catch (error) {
       showError(error.message || "Failed to generate resume")
     } finally {
       setLoading(false)
+    }
+  }
+
+  // ATS PDF Upload Handler (uses new backend route)
+  const handleATSFileUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (!file.name.endsWith(".pdf")) {
+      showError("Please upload a PDF file.")
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showError("File size should be less than 5MB.")
+      return
+    }
+    setAtsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      // Use the new Gemini-powered backend endpoint for PDF extraction
+      const res = await aiAPI.uploadATSResume(formData)
+      setAtsForm((f) => ({ ...f, resumeContent: res.data?.text || "" }))
+      setAtsFile(file)
+      showSuccess("PDF uploaded and text extracted!")
+    } catch (error) {
+      showError("Failed to extract text from PDF.")
+    } finally {
+      setAtsUploading(false)
     }
   }
 
@@ -200,7 +230,7 @@ const AIFeaturesPage = () => {
     setLoading(true)
     try {
       const payload = {
-        userId: user.id,
+        userId: user._id || user.id,
         resumeContent: atsForm.resumeContent,
         jobDescription: atsForm.jobDescription,
       }
@@ -224,7 +254,7 @@ const AIFeaturesPage = () => {
     setLoading(true)
     try {
       const payload = {
-        userId: user.id,
+        userId: user._id || user.id,
         ...roadmapForm,
       }
       const res = await aiAPI.generateRoadmap(payload)
@@ -250,35 +280,6 @@ const AIFeaturesPage = () => {
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
     showSuccess(`${filename} downloaded successfully!`)
-  }
-
-  // ATS PDF Upload Handler
-  const handleATSFileUpload = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    if (!file.name.endsWith(".pdf")) {
-      showError("Please upload a PDF file.")
-      return
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      showError("File size should be less than 5MB.")
-      return
-    }
-    setAtsUploading(true)
-    try {
-      // Upload PDF and extract text on backend
-      const formData = new FormData()
-      formData.append("file", file)
-      const res = await fileAPI.uploadFile(formData, "ats")
-      // Assume backend returns { text: "...extracted text..." }
-      setAtsForm((f) => ({ ...f, resumeContent: res.data?.text || "" }))
-      setAtsFile(file)
-      showSuccess("PDF uploaded and text extracted!")
-    } catch (error) {
-      showError("Failed to extract text from PDF.")
-    } finally {
-      setAtsUploading(false)
-    }
   }
 
   // Feature forms
@@ -692,17 +693,34 @@ const AIFeaturesPage = () => {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Generated Resume</h3>
               <button
-                onClick={() => handleDownload(generatedContent.generatedContent, "resume.txt")}
+                onClick={() => handleDownload(generatedContent, "resume.md")}
                 className="btn-secondary flex items-center space-x-2"
               >
                 <Download className="w-4 h-4" />
                 <span>Download</span>
               </button>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-              <pre className="whitespace-pre-wrap text-sm text-gray-900 dark:text-white">
-                {generatedContent.generatedContent}
-              </pre>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg prose prose-blue dark:prose-invert max-w-none shadow-inner animate-fade-in">
+              <ReactMarkdown
+                children={generatedContent}
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]}
+                components={{
+                  h1: ({node, ...props}) => <h1 className="text-2xl font-bold text-blue-700 dark:text-blue-300 mt-4 mb-2 border-b border-blue-200 dark:border-blue-700 pb-1" {...props} />,
+                  h2: ({node, ...props}) => <h2 className="text-xl font-semibold text-blue-600 dark:text-blue-200 mt-3 mb-1" {...props} />,
+                  h3: ({node, ...props}) => <h3 className="text-lg font-semibold text-blue-500 dark:text-blue-100 mt-2 mb-1" {...props} />,
+                  ul: ({node, ...props}) => <ul className="list-disc ml-6 mb-2" {...props} />,
+                  li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                  strong: ({node, ...props}) => <strong className="text-blue-700 dark:text-blue-300" {...props} />,
+                  a: ({node, ...props}) => <a className="text-blue-600 underline hover:text-blue-800" target="_blank" rel="noopener noreferrer" {...props} />,
+                  p: ({node, ...props}) => <p className="mb-2" {...props} />,
+                  table: ({node, ...props}) => <table className="table-auto border-collapse w-full my-4" {...props} />,
+                  th: ({node, ...props}) => <th className="border px-2 py-1 bg-blue-100 dark:bg-blue-900" {...props} />,
+                  td: ({node, ...props}) => <td className="border px-2 py-1" {...props} />,
+                  blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-blue-400 pl-4 italic text-gray-600 dark:text-gray-300 my-2" {...props} />,
+                  code: ({node, ...props}) => <code className="bg-gray-200 dark:bg-gray-800 px-1 rounded text-sm" {...props} />,
+                }}
+              />
             </div>
           </div>
         )

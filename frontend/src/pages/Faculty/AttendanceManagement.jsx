@@ -37,7 +37,7 @@ const AttendanceManagement = () => {
   const fetchCourses = async () => {
     try {
       setLoading(true)
-      const response = await coursesAPI.getStudentCourses({ faculty: user.id, active: true, limit: 100 })
+      const response = await coursesAPI.getCourses({ faculty: user.id, active: true, limit: 100 })
       setCourses(response.data.courses || [])
     } catch (error) {
       showError("Failed to fetch courses")

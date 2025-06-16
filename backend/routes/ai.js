@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
-
+const { GoogleGenerativeAI } = require("@google/generative-ai")
+const fs = require("fs")
+const multer = require("multer")
+const pdfParse = require("pdf-parse")
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
 // Since AI models aren't provided, I'll create them here
 const mongoose = require('mongoose');
 
@@ -306,42 +311,49 @@ router.post('/resume/generate', [
       });
     }
 
-    // Mock AI resume generation (replace with actual AI service)
-    const generatedContent = `
-# ${req.body.personalInfo.name}
-${req.body.personalInfo.email} | ${req.body.personalInfo.phone}
+    // Build a detailed prompt for Gemini
+    const prompt = `
+You are a professional resume writer. Generate a modern, ATS-friendly resume in markdown format using the following data:
+- Name: ${req.body.personalInfo.name}
+- Email: ${req.body.personalInfo.email}
+- Phone: ${req.body.personalInfo.phone}
+- Location: ${req.body.personalInfo.location}
+- LinkedIn: ${req.body.personalInfo.linkedin}
+- GitHub: ${req.body.personalInfo.github}
+- Summary: ${req.body.summary}
+- Experience: ${req.body.experience.map(exp => `
+  - Title: ${exp.title}
+  - Company: ${exp.company}
+  - Duration: ${exp.duration}
+  - Description: ${exp.description}
+`).join('\n')}
+- Education: ${req.body.education.map(edu => `
+  - Degree: ${edu.degree}
+  - Institution: ${edu.institution}
+  - Year: ${edu.year}
+  - CGPA: ${edu.cgpa}
+`).join('\n')}
+- Skills: ${req.body.skills.join(', ')}
+- Projects: ${req.body.projects ? req.body.projects.map(project => `
+  - Name: ${project.name}
+  - Description: ${project.description}
+  - Technologies: ${project.technologies.join(', ')}
+  - Link: ${project.link}
+`).join('\n') : ''}
+- Achievements: ${req.body.achievements?.join(', ')}
 
-## Professional Summary
-${req.body.summary || 'Motivated professional with strong technical skills and passion for innovation.'}
-
-## Experience
-${req.body.experience.map(exp => `
-### ${exp.title} at ${exp.company}
-${exp.duration}
-${exp.description}
-`).join('')}
-
-## Education
-${req.body.education.map(edu => `
-### ${edu.degree}
-${edu.institution} (${edu.year}) - CGPA: ${edu.cgpa}
-`).join('')}
-
-## Skills
-${req.body.skills.join(', ')}
-
-## Projects
-${req.body.projects ? req.body.projects.map(project => `
-### ${project.name}
-${project.description}
-Technologies: ${project.technologies.join(', ')}
-`).join('') : ''}
+Format the resume with clear sections, bold headings, and bullet points where appropriate. Use only markdown.
     `;
+
+    // Call Gemini API
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    const result = await model.generateContent(prompt)
+    const generatedContent = result.response.text()
 
     // Create resume record
     const resume = new Resume({
       ...req.body,
-      user: userId,
+      user: req.body.userId,
       generatedContent,
       creditsUsed: creditsRequired
     });
@@ -402,59 +414,52 @@ router.post('/ats/check', [
       });
     }
 
-    // Mock ATS analysis (replace with actual AI service)
-    const jobKeywords = jobDescription.toLowerCase().split(' ')
-      .filter(word => word.length > 3)
-      .slice(0, 20);
-    
-    const resumeWords = resumeContent.toLowerCase().split(' ');
-    const matchedKeywords = jobKeywords.filter(keyword => 
-      resumeWords.some(word => word.includes(keyword))
-    );
-    
-    const missingKeywords = jobKeywords.filter(keyword => 
-      !resumeWords.some(word => word.includes(keyword))
-    );
+    // Gemini prompt for ATS
+    const prompt = `
+You are an ATS (Applicant Tracking System) expert. Analyze the following resume (in plain text) against the provided job description. 
+- Give an overall ATS compatibility score (0-100).
+- List matched keywords, missing keywords, and provide at least 3 actionable suggestions for improvement.
+- Also, provide a format score, content score, and keyword score (each 0-100).
+Return the result as a JSON object with keys: score, analysis { matchedKeywords, missingKeywords, suggestions, formatScore, contentScore, keywordScore }.
 
-    const keywordScore = Math.round((matchedKeywords.length / jobKeywords.length) * 100);
-    const formatScore = Math.floor(Math.random() * 20) + 80; // Mock format score
-    const contentScore = Math.floor(Math.random() * 30) + 70; // Mock content score
-    const overallScore = Math.round((keywordScore + formatScore + contentScore) / 3);
 
-    const analysis = {
-      matchedKeywords: matchedKeywords.slice(0, 10),
-      missingKeywords: missingKeywords.slice(0, 10),
-      suggestions: [
-        'Include more relevant keywords from the job description',
-        'Add quantifiable achievements and metrics',
-        'Optimize section headings for ATS readability',
-        'Use standard formatting and avoid graphics'
-      ],
-      formatScore,
-      contentScore,
-      keywordScore
-    };
+Resume:
+${req.body.resumeContent}
+
+Job Description:
+${req.body.jobDescription}
+    `
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    const result = await model.generateContent(prompt)
+    // Parse Gemini's JSON response
+    let analysisResult
+    try {
+      analysisResult = JSON.parse(result.response.text())
+    } catch (e) {
+      // fallback: try to extract JSON from text
+      const match = result.response.text().match(/\{[\s\S]*\}/)
+      analysisResult = match ? JSON.parse(match[0]) : null
+    }
+    if (!analysisResult) throw new Error("Gemini response not in expected format")
 
     // Create ATS report
     const atsReport = new ATSReport({
-      user: userId,
-      resumeContent,
-      jobDescription,
-      score: overallScore,
-      analysis,
+      user: req.body.userId,
+      resumeContent: req.body.resumeContent,
+      jobDescription: req.body.jobDescription,
+      score: analysisResult.score,
+      analysis: analysisResult.analysis,
       creditsUsed: creditsRequired
-    });
-    await atsReport.save();
-
-    // Deduct credits
-    credits.usedCredits += creditsRequired;
-    credits.remainingCredits -= creditsRequired;
+    })
+    await atsReport.save()
+    credits.usedCredits += creditsRequired
+    credits.remainingCredits -= creditsRequired
     credits.history.push({
       action: 'ats_check',
       creditsUsed: creditsRequired,
-      details: `ATS analysis completed with score: ${overallScore}`
-    });
-    await credits.save();
+      details: `ATS analysis completed with score: ${analysisResult.score}`
+    })
+    await credits.save()
 
     res.status(201).json({
       success: true,
@@ -463,13 +468,13 @@ router.post('/ats/check', [
         report: atsReport,
         creditsRemaining: credits.remainingCredits
       }
-    });
+    })
   } catch (error) {
     res.status(500).json({
       success: false,
       message: 'Error performing ATS check',
       error: error.message
-    });
+    })
   }
 });
 
@@ -503,79 +508,106 @@ router.post('/roadmap/generate', [
       });
     }
 
-    // Mock roadmap generation (replace with actual AI service)
-    const phases = [
-      {
-        title: 'Foundation Phase',
-        duration: '2-3 months',
-        description: 'Build fundamental skills and understanding',
-        topics: ['Basic Concepts', 'Core Technologies', 'Development Environment'],
-        resources: [
-          { title: 'Documentation', type: 'docs', url: '#' },
-          { title: 'Online Course', type: 'course', url: '#' }
-        ],
-        milestones: ['Complete basic projects', 'Pass certification exam']
-      },
-      {
-        title: 'Intermediate Phase',
-        duration: '3-4 months',
-        description: 'Develop practical skills and experience',
-        topics: ['Advanced Concepts', 'Best Practices', 'Real Projects'],
-        resources: [
-          { title: 'Advanced Tutorial', type: 'tutorial', url: '#' },
-          { title: 'Practice Platform', type: 'platform', url: '#' }
-        ],
-        milestones: ['Build portfolio projects', 'Contribute to open source']
-      },
-      {
-        title: 'Advanced Phase',
-        duration: '2-3 months',
-        description: 'Master advanced topics and prepare for roles',
-        topics: ['System Design', 'Leadership', 'Industry Standards'],
-        resources: [
-          { title: 'System Design Course', type: 'course', url: '#' },
-          { title: 'Industry Blog', type: 'blog', url: '#' }
-        ],
-        milestones: ['Complete capstone project', 'Interview preparation']
-      }
-    ];
+    // Gemini prompt for roadmap
+    const prompt = `
+You are a career coach. Generate a detailed learning roadmap as a JSON object for a student who wants to become a "${targetRole}".
+The roadmap must strictly match this schema:
+{
+  "title": String,
+  "targetRole": String,
+  "currentLevel": String, // One of: "beginner", "intermediate", "advanced" (all lowercase)
+  "duration": String,
+  "phases": [
+    {
+      "title": String,
+      "duration": String,
+      "description": String,
+      "topics": [String],
+      "resources": [
+        {
+          "title": String,
+          "type": String,
+          "url": String
+        }
+      ],
+      "milestones": [String]
+    }
+  ]
+}
 
-    const roadmap = new Roadmap({
-      user: userId,
-      title: `${targetRole} Learning Roadmap`,
-      targetRole,
-      currentLevel,
-      duration,
-      phases,
-      creditsUsed: creditsRequired
-    });
-    await roadmap.save();
+Example:
+{
+  "title": "Full Stack Developer Roadmap",
+  "targetRole": "Full Stack Developer",
+  "currentLevel": "beginner",
+  "duration": "6 months",
+  "phases": [
+    {
+      "title": "Phase 1: Basics of Web Development",
+      "duration": "1 month",
+      "description": "Learn HTML, CSS, and JavaScript fundamentals.",
+      "topics": ["HTML", "CSS", "JavaScript Basics"],
+      "resources": [
+        { "title": "HTML Crash Course", "type": "video", "url": "https://example.com/html" }
+      ],
+      "milestones": ["Build a static website"]
+    }
+    // ...more phases...
+  ]
+}
 
-    // Deduct credits
-    credits.usedCredits += creditsRequired;
-    credits.remainingCredits -= creditsRequired;
-    credits.history.push({
-      action: 'roadmap_generate',
-      creditsUsed: creditsRequired,
-      details: `Generated roadmap for ${targetRole}`
-    });
-    await credits.save();
+Now, generate a roadmap for:
+- Target Role: ${targetRole}
+- Current Level: ${currentLevel.toLowerCase()}
+- Duration: ${duration}
 
-    res.status(201).json({
-      success: true,
-      message: 'Learning roadmap generated successfully',
-      data: {
-        roadmap,
-        creditsRemaining: credits.remainingCredits
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error generating roadmap',
-      error: error.message
-    });
+Return only the JSON object, nothing else.
+`
+
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
+const result = await model.generateContent(prompt)
+let roadmapObj
+try {
+  roadmapObj = JSON.parse(result.response.text())
+} catch (e) {
+  const match = result.response.text().match(/\{[\s\S]*\}/)
+  roadmapObj = match ? JSON.parse(match[0]) : null
+}
+if (!roadmapObj) throw new Error("Gemini response not in expected format")
+
+// Ensure currentLevel is lowercase
+roadmapObj.currentLevel = (roadmapObj.currentLevel || '').toLowerCase();
+
+const roadmap = new Roadmap({
+  user: req.body.userId,
+  ...roadmapObj,
+  creditsUsed: creditsRequired
+})
+await roadmap.save()
+credits.usedCredits += creditsRequired
+credits.remainingCredits -= creditsRequired
+credits.history.push({
+  action: 'roadmap_generate',
+  creditsUsed: creditsRequired,
+  details: `Generated roadmap for ${req.body.targetRole}`
+})
+await credits.save()
+
+res.status(201).json({
+  success: true,
+  message: 'Learning roadmap generated successfully',
+  data: {
+    roadmap,
+    creditsRemaining: credits.remainingCredits
   }
+})
+} catch (error) {
+  res.status(500).json({
+    success: false,
+    message: 'Error generating roadmap',
+    error: error.message
+  })
+}
 });
 
 // GET /api/ai/credits/:userId/history - Get user's credit usage history
@@ -679,5 +711,22 @@ router.post('/credits/bulk-allocate', [
     });
   }
 });
+
+const upload = multer({ dest: "uploads/" })
+
+// POST /api/ai/ats/upload
+router.post('/ats/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" })
+    }
+    const dataBuffer = fs.readFileSync(req.file.path)
+    const pdfData = await pdfParse(dataBuffer)
+    fs.unlinkSync(req.file.path) // Clean up
+    res.json({ success: true, text: pdfData.text })
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to extract PDF text", error: error.message })
+  }
+})
 
 module.exports = router;
