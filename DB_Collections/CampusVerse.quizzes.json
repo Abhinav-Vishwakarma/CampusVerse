@@ -1,0 +1,191 @@
+[{
+  "_id": {
+    "$oid": "684e673b019836923ae1b352"
+  },
+  "title": "Database Quiz 1",
+  "description": "Quiz on SQL Basics",
+  "course": {
+    "$oid": "684e673b019836923ae1b343"
+  },
+  "faculty": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "branch": "Computer Science",
+  "section": "A",
+  "duration": 45,
+  "totalMarks": 25,
+  "passingMarks": 15,
+  "questions": [
+    {
+      "question": "Which SQL command is used to retrieve data?",
+      "options": [
+        "INSERT",
+        "SELECT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "correctAnswer": 1,
+      "marks": 3,
+      "_id": {
+        "$oid": "684e673b019836923ae1b353"
+      }
+    }
+  ],
+  "code": "DB001",
+  "startDate": {
+    "$date": "2024-01-20T00:00:00.000Z"
+  },
+  "endDate": {
+    "$date": "2024-01-25T00:00:00.000Z"
+  },
+  "isActive": true,
+  "attempts": [],
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.115Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b34c"
+  },
+  "title": "Data Structures Quiz 1",
+  "description": "Quiz on Arrays and Linked Lists",
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "faculty": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "branch": "Computer Science",
+  "section": "A",
+  "duration": 30,
+  "totalMarks": 20,
+  "passingMarks": 12,
+  "questions": [
+    {
+      "question": "What is the time complexity of accessing an element in an array?",
+      "options": [
+        "O(1)",
+        "O(n)",
+        "O(log n)",
+        "O(n²)"
+      ],
+      "correctAnswer": 0,
+      "marks": 2,
+      "_id": {
+        "$oid": "684e673b019836923ae1b34d"
+      }
+    },
+    {
+      "question": "Which data structure follows LIFO principle?",
+      "options": [
+        "Queue",
+        "Stack",
+        "Array",
+        "Linked List"
+      ],
+      "correctAnswer": 1,
+      "marks": 2,
+      "_id": {
+        "$oid": "684e673b019836923ae1b34e"
+      }
+    }
+  ],
+  "code": "DSA001",
+  "startDate": {
+    "$date": "2024-01-15T00:00:00.000Z"
+  },
+  "endDate": {
+    "$date": "2024-01-20T00:00:00.000Z"
+  },
+  "isActive": true,
+  "attempts": [
+    {
+      "student": {
+        "$oid": "684e673a019836923ae1b338"
+      },
+      "answers": [
+        {
+          "question": 0,
+          "selectedOption": 0,
+          "_id": {
+            "$oid": "684e673b019836923ae1b350"
+          }
+        },
+        {
+          "question": 1,
+          "selectedOption": 1,
+          "_id": {
+            "$oid": "684e673b019836923ae1b351"
+          }
+        }
+      ],
+      "score": 4,
+      "percentage": 20,
+      "startTime": {
+        "$date": "2024-01-16T04:30:00.000Z"
+      },
+      "endTime": {
+        "$date": "2024-01-16T04:45:00.000Z"
+      },
+      "_id": {
+        "$oid": "684e673b019836923ae1b34f"
+      },
+      "submittedAt": {
+        "$date": "2025-06-15T06:24:59.113Z"
+      }
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.113Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68504e8d9f5582fb7ff6e152"
+  },
+  "title": "This is test quiz",
+  "description": "nothing",
+  "course": {
+    "$oid": "684e673b019836923ae1b344"
+  },
+  "faculty": {
+    "$oid": "684e6739019836923ae1b331"
+  },
+  "branch": "CSE",
+  "section": "B",
+  "duration": 1,
+  "totalMarks": 5,
+  "passingMarks": 5,
+  "questions": [
+    {
+      "question": "why?",
+      "options": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "correctAnswer": 0,
+      "marks": 5,
+      "_id": {
+        "$oid": "68504e8d9f5582fb7ff6e153"
+      }
+    }
+  ],
+  "code": "8OZ6CM",
+  "startDate": {
+    "$date": "2025-06-16T17:02:00.000Z"
+  },
+  "endDate": {
+    "$date": "2025-06-16T17:04:00.000Z"
+  },
+  "isActive": true,
+  "attempts": [],
+  "createdAt": {
+    "$date": "2025-06-16T17:04:13.017Z"
+  },
+  "__v": 0
+}]

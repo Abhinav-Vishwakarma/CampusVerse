@@ -1,0 +1,269 @@
+[{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3d9"
+  },
+  "title": "Tech Fest Registration Open",
+  "message": "Registration for Tech Fest 2024 is now open. Register before seats fill up!",
+  "type": "event",
+  "targetAudience": "students",
+  "targetUsers": [],
+  "priority": "medium",
+  "createdBy": {
+    "$oid": "684e6739019836923ae1b32c"
+  },
+  "isActive": false,
+  "scheduledFor": {
+    "$date": "2025-06-15T06:25:00.644Z"
+  },
+  "readBy": [],
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.644Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3d8"
+  },
+  "title": "Fee Payment Due",
+  "message": "Your semester fee payment is overdue. Please clear your dues immediately.",
+  "type": "alert",
+  "targetAudience": "individual",
+  "targetUsers": [
+    {
+      "$oid": "684e673a019836923ae1b339"
+    }
+  ],
+  "priority": "urgent",
+  "createdBy": {
+    "$oid": "684e6739019836923ae1b32c"
+  },
+  "isActive": false,
+  "scheduledFor": {
+    "$date": "2025-06-15T06:25:00.643Z"
+  },
+  "readBy": [],
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.643Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3d7"
+  },
+  "title": "Assignment Deadline Reminder",
+  "message": "Your BST implementation assignment is due tomorrow. Please submit on time.",
+  "type": "reminder",
+  "targetAudience": "individual",
+  "targetUsers": [
+    {
+      "$oid": "684e673a019836923ae1b338"
+    },
+    {
+      "$oid": "684e673a019836923ae1b339"
+    }
+  ],
+  "priority": "medium",
+  "createdBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "isActive": false,
+  "scheduledFor": {
+    "$date": "2025-06-15T06:25:00.643Z"
+  },
+  "readBy": [],
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.643Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3d5"
+  },
+  "title": "Welcome to CampusVerse!",
+  "message": "Welcome to the new academic management system. Explore all features and stay updated.",
+  "type": "announcement",
+  "targetAudience": "all",
+  "targetUsers": [],
+  "priority": "high",
+  "readBy": [
+    {
+      "user": {
+        "$oid": "684e673a019836923ae1b338"
+      },
+      "_id": {
+        "$oid": "684e673c019836923ae1b3d6"
+      },
+      "readAt": {
+        "$date": "2025-06-15T06:25:00.642Z"
+      }
+    },
+    {
+      "user": {
+        "$oid": "684e673a019836923ae1b33a"
+      },
+      "readAt": {
+        "$date": "2025-06-16T09:33:18.600Z"
+      },
+      "_id": {
+        "$oid": "684fe4de905dc0224a3856eb"
+      }
+    }
+  ],
+  "createdBy": {
+    "$oid": "684e6739019836923ae1b32c"
+  },
+  "isActive": false,
+  "scheduledFor": {
+    "$date": "2025-06-15T06:25:00.643Z"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.643Z"
+  },
+  "__v": 1
+},
+{
+  "_id": {
+    "$oid": "684ed84092c3af15037fe62d"
+  },
+  "title": "test",
+  "message": "this is a test 3",
+  "type": "announcement",
+  "targetAudience": "all",
+  "targetUsers": [],
+  "priority": "medium",
+  "scheduledFor": null,
+  "createdBy": {
+    "$oid": "684e6886dbbbc1a5d2bef835"
+  },
+  "isActive": false,
+  "readBy": [],
+  "createdAt": {
+    "$date": "2025-06-15T14:27:12.300Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684edc1992c3af15037fe76d"
+  },
+  "title": "test",
+  "message": "this is a test",
+  "type": "announcement",
+  "targetAudience": "students",
+  "targetUsers": [],
+  "priority": "urgent",
+  "scheduledFor": null,
+  "createdBy": {
+    "$oid": "684e6886dbbbc1a5d2bef835"
+  },
+  "isActive": false,
+  "readBy": [
+    {
+      "user": {
+        "$oid": "684e673a019836923ae1b33a"
+      },
+      "readAt": {
+        "$date": "2025-06-16T09:33:21.572Z"
+      },
+      "_id": {
+        "$oid": "684fe4e1905dc0224a3856ee"
+      }
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-06-15T14:43:37.997Z"
+  },
+  "__v": 1
+},
+{
+  "_id": {
+    "$oid": "684eddc092c3af15037fe7a5"
+  },
+  "title": "Tech Fest Registration Open",
+  "message": "Registration for Tech Fest 2024 is now open. Register before seats fill up!",
+  "type": "event",
+  "targetAudience": "students",
+  "targetUsers": [],
+  "priority": "medium",
+  "createdBy": {
+    "$oid": "684e6886dbbbc1a5d2bef835"
+  },
+  "isActive": false,
+  "scheduledFor": {
+    "$date": "2025-06-15T14:50:40.497Z"
+  },
+  "readBy": [],
+  "createdAt": {
+    "$date": "2025-06-15T14:50:40.497Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684fba07d3618bbfb1084346"
+  },
+  "title": "test noti",
+  "message": "testing",
+  "type": "reminder",
+  "targetAudience": "students",
+  "targetUsers": [],
+  "priority": "urgent",
+  "scheduledFor": null,
+  "createdBy": {
+    "$oid": "684e6886dbbbc1a5d2bef835"
+  },
+  "isActive": false,
+  "readBy": [
+    {
+      "user": {
+        "$oid": "684e673a019836923ae1b33a"
+      },
+      "readAt": {
+        "$date": "2025-06-16T09:33:23.724Z"
+      },
+      "_id": {
+        "$oid": "684fe4e3905dc0224a3856f1"
+      }
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-06-16T06:30:31.757Z"
+  },
+  "__v": 1
+},
+{
+  "_id": {
+    "$oid": "6850465f55fec03f5e21d444"
+  },
+  "title": "This is a test Notification",
+  "message": "This is a announcement",
+  "type": "announcement",
+  "targetAudience": "students",
+  "targetUsers": [],
+  "priority": "urgent",
+  "scheduledFor": null,
+  "createdBy": {
+    "$oid": "684e6886dbbbc1a5d2bef835"
+  },
+  "isActive": true,
+  "readBy": [
+    {
+      "user": {
+        "$oid": "684e673a019836923ae1b33a"
+      },
+      "readAt": {
+        "$date": "2025-06-16T16:29:45.549Z"
+      },
+      "_id": {
+        "$oid": "6850467955fec03f5e21d44f"
+      }
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-06-16T16:29:19.595Z"
+  },
+  "__v": 1
+}]

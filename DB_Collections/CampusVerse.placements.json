@@ -1,0 +1,92 @@
+[{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3c7"
+  },
+  "jobTitle": "Software Developer",
+  "company": "TCS",
+  "description": "Full-stack development role for fresh graduates",
+  "location": "Bangalore, Mumbai, Pune",
+  "salary": {
+    "min": 350000,
+    "max": 450000
+  },
+  "requirements": [
+    "B.Tech in CS/IT/ECE",
+    "Good programming skills",
+    "Problem-solving abilities"
+  ],
+  "eligibilityCriteria": {
+    "minCGPA": 7,
+    "branches": [
+      "Computer Science",
+      "Information Technology",
+      "Electronics"
+    ],
+    "passingYear": 2024
+  },
+  "applicationDeadline": {
+    "$date": "2024-02-25T00:00:00.000Z"
+  },
+  "applications": [
+    {
+      "student": {
+        "$oid": "684e673a019836923ae1b338"
+      },
+      "coverLetter": "I am interested in this position...",
+      "resume": "/uploads/resumes/arjun_resume.pdf",
+      "status": "pending",
+      "_id": {
+        "$oid": "684e673c019836923ae1b3c8"
+      },
+      "appliedAt": {
+        "$date": "2025-06-15T06:25:00.366Z"
+      },
+      "updatedAt": {
+        "$date": "2025-06-15T06:25:00.366Z"
+      }
+    }
+  ],
+  "isActive": true,
+  "postedBy": {
+    "$oid": "684e6739019836923ae1b32d"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.366Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684ee25d92c3af15037fe945"
+  },
+  "jobTitle": "fsdf",
+  "company": "sdfs",
+  "description": "sdfsdf",
+  "location": "ghz",
+  "salary": {
+    "min": 45050,
+    "max": 35242.42
+  },
+  "requirements": [
+    "edwwdc"
+  ],
+  "eligibilityCriteria": {
+    "minCGPA": 6,
+    "branches": [
+      "EE"
+    ],
+    "passingYear": 2029
+  },
+  "applicationDeadline": {
+    "$date": "2025-06-20T00:00:00.000Z"
+  },
+  "isActive": false,
+  "postedBy": {
+    "$oid": "684e6886dbbbc1a5d2bef835"
+  },
+  "applications": [],
+  "createdAt": {
+    "$date": "2025-06-15T15:10:21.536Z"
+  },
+  "__v": 0
+}]

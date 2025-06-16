@@ -1,0 +1,112 @@
+[{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3b5"
+  },
+  "title": "Database Design Project",
+  "description": "Design a database for a library management system",
+  "course": {
+    "$oid": "684e673b019836923ae1b343"
+  },
+  "faculty": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "branch": "Computer Science",
+  "section": "A",
+  "dueDate": {
+    "$date": "2024-02-20T00:00:00.000Z"
+  },
+  "totalMarks": 40,
+  "instructions": "Create ER diagram and normalize to 3NF",
+  "isActive": true,
+  "attachments": [],
+  "submissions": [],
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.127Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3b2"
+  },
+  "title": "Implement Binary Search Tree",
+  "description": "Create a complete BST implementation with insert, delete, and search operations",
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "faculty": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "branch": "Computer Science",
+  "section": "A",
+  "dueDate": {
+    "$date": "2024-02-15T00:00:00.000Z"
+  },
+  "totalMarks": 50,
+  "instructions": "Use any programming language. Include proper documentation.",
+  "submissions": [
+    {
+      "student": {
+        "$oid": "684e673a019836923ae1b338"
+      },
+      "submissionText": "BST implementation completed with all required operations.",
+      "attachments": [
+        {
+          "fileName": "bst_implementation.cpp",
+          "fileUrl": "/uploads/assignments/bst_implementation.cpp",
+          "fileSize": 2048,
+          "_id": {
+            "$oid": "684e673c019836923ae1b3b4"
+          }
+        }
+      ],
+      "marks": 45,
+      "feedback": "Excellent implementation. Good code structure.",
+      "gradedAt": {
+        "$date": "2024-02-16T00:00:00.000Z"
+      },
+      "gradedBy": {
+        "$oid": "684e6739019836923ae1b330"
+      },
+      "_id": {
+        "$oid": "684e673c019836923ae1b3b3"
+      },
+      "submittedAt": {
+        "$date": "2025-06-15T06:25:00.126Z"
+      }
+    }
+  ],
+  "isActive": true,
+  "attachments": [],
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.126Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684fb4f21534d314b2996d30"
+  },
+  "title": "sdas",
+  "description": "asdasda",
+  "course": {
+    "$oid": "684e673b019836923ae1b344"
+  },
+  "faculty": {
+    "$oid": "684e6739019836923ae1b331"
+  },
+  "branch": "Information Technology",
+  "section": "A",
+  "dueDate": {
+    "$date": "2025-06-26T00:00:00.000Z"
+  },
+  "totalMarks": 10,
+  "instructions": "asdasd",
+  "attachments": [],
+  "isActive": true,
+  "submissions": [],
+  "createdAt": {
+    "$date": "2025-06-16T06:08:50.503Z"
+  },
+  "__v": 0
+}]

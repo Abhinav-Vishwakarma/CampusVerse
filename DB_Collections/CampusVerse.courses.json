@@ -1,0 +1,150 @@
+[{
+  "_id": {
+    "$oid": "684e673b019836923ae1b343"
+  },
+  "name": "Database Management Systems",
+  "code": "CS302",
+  "description": "Introduction to database concepts and SQL",
+  "semester": 6,
+  "branch": "Computer Science",
+  "credits": 3,
+  "faculty": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "students": [
+    {
+      "$oid": "684e673a019836923ae1b338"
+    },
+    {
+      "$oid": "684e673a019836923ae1b339"
+    }
+  ],
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.024Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b344"
+  },
+  "name": "Web Technologies",
+  "code": "IT201",
+  "description": "HTML, CSS, JavaScript, and modern web frameworks",
+  "semester": 4,
+  "branch": "Information Technology",
+  "credits": 3,
+  "faculty": {
+    "$oid": "684e6739019836923ae1b331"
+  },
+  "students": [
+    {
+      "$oid": "684e673a019836923ae1b33a"
+    }
+  ],
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.025Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "name": "Data Structures and Algorithms",
+  "code": "CS301",
+  "description": "Comprehensive study of data structures and algorithms",
+  "semester": 6,
+  "branch": "Computer Science",
+  "credits": 4,
+  "faculty": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "syllabus": "Arrays, Linked Lists, Stacks, Queues, Trees, Graphs, Sorting, Searching",
+  "students": [
+    {
+      "$oid": "684e673a019836923ae1b338"
+    },
+    {
+      "$oid": "684e673a019836923ae1b339"
+    }
+  ],
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.021Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b346"
+  },
+  "name": "Engineering Mechanics",
+  "code": "ME101",
+  "description": "Fundamentals of mechanics and statics",
+  "semester": 2,
+  "branch": "Mechanical",
+  "credits": 3,
+  "faculty": {
+    "$oid": "684e6739019836923ae1b333"
+  },
+  "students": [
+    {
+      "$oid": "684e673a019836923ae1b33c"
+    }
+  ],
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.026Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b345"
+  },
+  "name": "Digital Electronics",
+  "code": "EC201",
+  "description": "Digital circuits and logic design",
+  "semester": 4,
+  "branch": "Electronics",
+  "credits": 4,
+  "faculty": {
+    "$oid": "684e6739019836923ae1b332"
+  },
+  "students": [],
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.026Z"
+  },
+  "__v": 1,
+  "type": "Undergraduate"
+},
+{
+  "_id": {
+    "$oid": "685038b4d8703b73a37afbea"
+  },
+  "name": "DS",
+  "code": "DS405",
+  "description": "testing",
+  "semester": 1,
+  "branch": "CSE",
+  "credits": 3,
+  "faculty": {
+    "$oid": "684e6739019836923ae1b332"
+  },
+  "syllabus": "",
+  "students": [
+    {
+      "$oid": "6850422e8aaec672b7a08fd3"
+    }
+  ],
+  "isActive": true,
+  "type": "Undergraduate",
+  "createdAt": {
+    "$date": "2025-06-16T15:31:00.483Z"
+  },
+  "__v": 1
+}]

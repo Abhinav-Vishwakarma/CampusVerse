@@ -1,0 +1,46 @@
+[{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3d1"
+  },
+  "title": "Data Structures Mid-Term 2023",
+  "year": 2023,
+  "examType": "mid-term",
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "semester": 6,
+  "branch": "Computer Science",
+  "fileUrl": "/uploads/pyqs/ds_midterm_2023.pdf",
+  "fileSize": 256000,
+  "downloads": 45,
+  "uploadedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.544Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3d2"
+  },
+  "title": "Database End-Term 2023",
+  "year": 2023,
+  "examType": "end-term",
+  "course": {
+    "$oid": "684e673b019836923ae1b343"
+  },
+  "semester": 6,
+  "branch": "Computer Science",
+  "fileUrl": "/uploads/pyqs/db_endterm_2023.pdf",
+  "fileSize": 384000,
+  "downloads": 32,
+  "uploadedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.544Z"
+  },
+  "__v": 0
+}]
