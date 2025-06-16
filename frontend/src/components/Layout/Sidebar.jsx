@@ -30,7 +30,7 @@ const Sidebar = () => {
       return [
         ...baseItems,
         { icon: BookOpen, label: "Courses", path: "/courses" },
-        { icon: Award, label: "Performance", path: "/performance" },
+        // { icon: Award, label: "Performance", path: "/performance" },
         { icon: ClipboardList, label: "Attendance", path: "/attendance" },
         { icon: GraduationCap, label: "Quizzes", path: "/quizzes" },
         { icon: Upload, label: "Assignments", path: "/assignments" },

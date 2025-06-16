@@ -34,27 +34,28 @@ const StudentDashboard = () => {
 
       // Fetch student courses
       const coursesResponse = await coursesAPI.getStudentCourses(user.id)
-      const coursesData = coursesResponse?.data || []
+      const coursesData = coursesResponse?.data.courses || []
       setCourses(Array.isArray(coursesData) ? coursesData : [])
-
+  
       // Fetch upcoming events
       const eventsResponse = await eventsAPI.getEvents({ upcoming: true, limit: 5 })
-      const eventsData = eventsResponse?.data || []
+      const eventsData = eventsResponse?.data.events || []
       setUpcomingEvents(Array.isArray(eventsData) ? eventsData : [])
 
       // Fetch AI credits
       const creditsResponse = await aiAPI.getCredits(user.id)
-      setAiCredits(creditsResponse?.data?.credits || 0)
+      // console.log(creditsResponse)
+      setAiCredits(creditsResponse?.data?.data.remainingCredits || 0)
 
       // Fetch dashboard stats
-      const statsResponse = await analyticsAPI.getDashboardStats()
-      const statsData = statsResponse?.data || {}
-      setStats({
-        enrolledCourses: coursesData.length || 0,
-        avgAttendance: statsData.avgAttendance || 0,
-        avgQuizScore: statsData.avgQuizScore || 0,
-        completedAssignments: statsData.completedAssignments || 0,
-      })
+      // const statsResponse = await analyticsAPI.getDashboardStats()
+      // const statsData = statsResponse?.data || {}
+      // setStats({
+      //   enrolledCourses: coursesData.length || 0,
+      //   avgAttendance: statsData.avgAttendance || 0,
+      //   avgQuizScore: statsData.avgQuizScore || 0,
+      //   completedAssignments: statsData.completedAssignments || 0,
+      // })
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error)
       showError("Failed to load dashboard data")
