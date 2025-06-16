@@ -1,74 +1,65 @@
-import mongoose from "mongoose"
+const mongoose = require("mongoose")
 
-const notificationSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: true,
+const notificationSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  message: {
+    type: String,
+    required: true,
+  },
+  type: {
+    type: String,
+    enum: ["announcement", "reminder", "alert", "update", "event"],
+    default: "announcement",
+  },
+  targetAudience: {
+    type: String,
+    enum: ["all", "students", "faculty", "admin", "individual"],
+    required: true,
+  },
+  targetUsers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
-    message: {
-      type: String,
-      required: true,
-    },
-    type: {
-      type: String,
-      enum: ["info", "warning", "success", "error", "announcement"],
-      default: "info",
-    },
-    priority: {
-      type: String,
-      enum: ["low", "medium", "high", "urgent"],
-      default: "medium",
-    },
-    recipients: {
-      type: String,
-      enum: ["all", "students", "faculty", "admins", "specific-users"],
-      required: true,
-    },
-    specificUsers: [
-      {
+  ],
+  priority: {
+    type: String,
+    enum: ["low", "medium", "high", "urgent"],
+    default: "medium",
+  },
+  scheduledFor: {
+    type: Date,
+    default: Date.now,
+  },
+  readBy: [
+    {
+      user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       },
-    ],
-    sentBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      readAt: {
+        type: Date,
+        default: Date.now,
+      },
     },
-    sentVia: [
-      {
-        type: String,
-        enum: ["app", "email", "sms"],
-      },
-    ],
-    isRead: [
-      {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        readAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-    scheduledFor: Date,
-    expiresAt: Date,
-    attachments: [
-      {
-        name: String,
-        url: String,
-      },
-    ],
-    actionUrl: String,
-    actionText: String,
+  ],
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   },
-  {
-    timestamps: true,
+  isActive: {
+    type: Boolean,
+    default: true,
   },
-)
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+})
 
-const Notification = mongoose.model("Notification", notificationSchema)
-export default Notification
+module.exports = mongoose.model("Notification", notificationSchema)

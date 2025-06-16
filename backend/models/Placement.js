@@ -1,91 +1,101 @@
-import mongoose from "mongoose"
+const mongoose = require("mongoose")
 
-const placementSchema = new mongoose.Schema(
-  {
-    company: {
-      name: {
-        type: String,
-        required: true,
-      },
-      logo: String,
-      website: String,
-      description: String,
+const applicationSchema = new mongoose.Schema({
+  student: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  coverLetter: {
+    type: String,
+    required: true,
+  },
+  resume: {
+    type: String,
+    required: true,
+  },
+  status: {
+    type: String,
+    enum: ["pending", "shortlisted", "rejected", "selected"],
+    default: "pending",
+  },
+  appliedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+})
+
+const placementSchema = new mongoose.Schema({
+  jobTitle: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  company: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  location: {
+    type: String,
+    required: true,
+  },
+  salary: {
+    min: {
+      type: Number,
+      required: true,
     },
-    jobTitle: {
+    max: {
+      type: Number,
+      required: true,
+    },
+  },
+  requirements: [
+    {
       type: String,
       required: true,
     },
-    jobDescription: {
-      type: String,
-      required: true,
+  ],
+  eligibilityCriteria: {
+    minCGPA: {
+      type: Number,
+      default: 6.0,
     },
-    requirements: [String],
-    skills: [String],
-    location: {
-      type: String,
-      required: true,
-    },
-    jobType: {
-      type: String,
-      enum: ["full-time", "part-time", "internship", "contract"],
-      default: "full-time",
-    },
-    salary: {
-      min: Number,
-      max: Number,
-      currency: {
-        type: String,
-        default: "INR",
-      },
-    },
-    eligibility: {
-      branches: [String],
-      minCGPA: Number,
-      graduationYear: [Number],
-      backlogs: {
-        allowed: Boolean,
-        maxCount: Number,
-      },
-    },
-    applicationDeadline: {
-      type: Date,
-      required: true,
-    },
-    driveDate: Date,
-    status: {
-      type: String,
-      enum: ["active", "closed", "cancelled", "completed"],
-      default: "active",
-    },
-    postedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    applications: [
+    branches: [
       {
-        student: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        appliedAt: {
-          type: Date,
-          default: Date.now,
-        },
-        status: {
-          type: String,
-          enum: ["applied", "shortlisted", "rejected", "selected", "withdrawn"],
-          default: "applied",
-        },
-        resume: String,
-        coverLetter: String,
+        type: String,
       },
     ],
+    passingYear: {
+      type: Number,
+    },
   },
-  {
-    timestamps: true,
+  applicationDeadline: {
+    type: Date,
+    required: true,
   },
-)
+  applications: [applicationSchema],
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  postedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+})
 
-const Placement = mongoose.model("Placement", placementSchema)
-export default Placement
+module.exports = mongoose.model("Placement", placementSchema)

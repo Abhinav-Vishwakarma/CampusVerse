@@ -1,85 +1,70 @@
-import mongoose from "mongoose"
+const mongoose = require("mongoose")
 
-const eventSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
-    eventType: {
-      type: String,
-      enum: ["academic", "cultural", "sports", "technical", "workshop", "seminar", "other"],
-      required: true,
-    },
-    startDate: {
-      type: Date,
-      required: true,
-    },
-    endDate: {
-      type: Date,
-      required: true,
-    },
-    venue: {
-      type: String,
-      required: true,
-    },
-    organizer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    participants: [
-      {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        registeredAt: {
-          type: Date,
-          default: Date.now,
-        },
-        status: {
-          type: String,
-          enum: ["registered", "attended", "cancelled"],
-          default: "registered",
-        },
-      },
-    ],
-    maxParticipants: {
-      type: Number,
-    },
-    registrationDeadline: {
-      type: Date,
-    },
-    isPublic: {
-      type: Boolean,
-      default: true,
-    },
-    status: {
-      type: String,
-      enum: ["upcoming", "ongoing", "completed", "cancelled"],
-      default: "upcoming",
-    },
-    images: [String],
-    attachments: [
-      {
-        name: String,
-        url: String,
-        uploadDate: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+const registrationSchema = new mongoose.Schema({
+  student: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   },
-  {
-    timestamps: true,
+  registeredAt: {
+    type: Date,
+    default: Date.now,
   },
-)
+  status: {
+    type: String,
+    enum: ["registered", "attended", "cancelled"],
+    default: "registered",
+  },
+})
 
-const Event = mongoose.model("Event", eventSchema)
-export default Event
+const eventSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+    required: true,
+  },
+  location: {
+    type: String,
+    required: true,
+  },
+  eventType: {
+    type: String,
+    enum: ["workshop", "seminar", "conference", "cultural", "sports", "placement", "other"],
+    required: true,
+  },
+  organizer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  maxRegistrations: {
+    type: Number,
+    default: 100,
+  },
+  registrations: [registrationSchema],
+  poster: {
+    type: String,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+})
+
+module.exports = mongoose.model("Event", eventSchema)
