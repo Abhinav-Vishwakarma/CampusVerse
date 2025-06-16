@@ -79,13 +79,22 @@ app.use((err, req, res, next) => {
   })
 })
 
-// 404 handler
+// Health check route
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Healthy",
+  })
+})
+
+// 404 handler (should be last)
 app.use("*", (req, res) => {
   res.status(404).json({
     success: false,
     message: "Route not found",
   })
 })
+
 
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {

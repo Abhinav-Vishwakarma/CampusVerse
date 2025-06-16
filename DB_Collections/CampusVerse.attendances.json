@@ -1,0 +1,1128 @@
+[{
+  "_id": {
+    "$oid": "684e673b019836923ae1b356"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-01T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 16",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.214Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b358"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-02T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 10",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.215Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b359"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-02T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 3",
+  "lecture": 3,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.215Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b357"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-01T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 17",
+  "lecture": 5,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.215Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b35a"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-03T00:00:00.000Z"
+  },
+  "status": "absent",
+  "topic": "DSA Lecture 6",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.215Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b35d"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-04T00:00:00.000Z"
+  },
+  "status": "absent",
+  "topic": "DSA Lecture 18",
+  "lecture": 3,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.216Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b35e"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-05T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 6",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.216Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b360"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-08T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 18",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.216Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b361"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-08T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 12",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.217Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b35f"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-05T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 6",
+  "lecture": 2,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.216Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b362"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-09T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 12",
+  "lecture": 2,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.217Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b363"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-09T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 15",
+  "lecture": 5,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.217Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b365"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-10T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 16",
+  "lecture": 3,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.217Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b364"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-10T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 1",
+  "lecture": 2,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.217Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b366"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-11T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 17",
+  "lecture": 2,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.217Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b367"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-11T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 11",
+  "lecture": 3,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.218Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b369"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-12T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 18",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.218Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b36a"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-15T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 8",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.218Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b368"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-12T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 11",
+  "lecture": 3,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.218Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b36b"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-15T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 19",
+  "lecture": 2,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.218Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b36c"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-16T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 13",
+  "lecture": 2,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.218Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b36d"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-16T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 12",
+  "lecture": 3,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.219Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b36e"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-17T00:00:00.000Z"
+  },
+  "status": "absent",
+  "topic": "DSA Lecture 1",
+  "lecture": 3,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.219Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b36f"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-17T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 15",
+  "lecture": 1,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.219Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b370"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-18T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 15",
+  "lecture": 1,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.219Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b35b"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-03T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 8",
+  "lecture": 5,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.216Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b372"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-19T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 18",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.219Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b35c"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-04T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 6",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.216Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b373"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-19T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 1",
+  "lecture": 5,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.219Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b375"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-22T00:00:00.000Z"
+  },
+  "status": "absent",
+  "topic": "DSA Lecture 4",
+  "lecture": 2,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.220Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b376"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-23T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 15",
+  "lecture": 2,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.220Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b377"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-23T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 4",
+  "lecture": 5,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.220Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b378"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-24T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 6",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.220Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b379"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-24T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 4",
+  "lecture": 2,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.220Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b37d"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-26T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 10",
+  "lecture": 1,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.221Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b37b"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-25T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 1",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.221Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b37c"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-26T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 13",
+  "lecture": 5,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.221Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b37a"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-25T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 7",
+  "lecture": 3,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.221Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b37e"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-29T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 6",
+  "lecture": 5,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.221Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b37f"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-29T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 17",
+  "lecture": 1,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.221Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b380"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-30T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 1",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.221Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b381"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-30T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 14",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.222Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b383"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-31T00:00:00.000Z"
+  },
+  "status": "absent",
+  "topic": "DSA Lecture 7",
+  "lecture": 5,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.222Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b382"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-31T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 14",
+  "lecture": 1,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.222Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b374"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-22T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "DSA Lecture 3",
+  "lecture": 5,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.220Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673b019836923ae1b371"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "date": {
+    "$date": "2024-01-18T00:00:00.000Z"
+  },
+  "status": "absent",
+  "topic": "DSA Lecture 14",
+  "lecture": 4,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "createdAt": {
+    "$date": "2025-06-15T06:24:59.219Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684fad627f19ee808d121ddf"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b33a"
+  },
+  "course": {
+    "$oid": "684e673b019836923ae1b344"
+  },
+  "date": {
+    "$date": "2025-06-16T00:00:00.000Z"
+  },
+  "status": "present",
+  "topic": "test",
+  "lecture": 1,
+  "markedBy": {
+    "$oid": "684e6739019836923ae1b331"
+  },
+  "createdAt": {
+    "$date": "2025-06-16T05:36:34.732Z"
+  },
+  "__v": 0
+}]

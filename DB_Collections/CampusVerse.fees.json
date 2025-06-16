@@ -1,0 +1,174 @@
+[{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3ba"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "feeType": "tuition",
+  "amount": 25000,
+  "dueDate": {
+    "$date": "2025-07-15T00:00:00.000Z"
+  },
+  "semester": 6,
+  "academicYear": "2025-2026",
+  "description": "Semester 6 Tuition Fee",
+  "status": "overdue",
+  "totalPaid": 0,
+  "createdBy": {
+    "$oid": "684e6739019836923ae1b32c"
+  },
+  "payments": [],
+  "balance": 25000,
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.208Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3bb"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "feeType": "hostel",
+  "amount": 25000,
+  "dueDate": {
+    "$date": "2025-08-01T00:00:00.000Z"
+  },
+  "semester": 6,
+  "academicYear": "2025-2026",
+  "description": "Hostel Fee",
+  "status": "partial",
+  "payments": [
+    {
+      "amount": 15000,
+      "paymentMethod": "card",
+      "transactionId": "TXN987654321",
+      "receipt": "RCP002",
+      "_id": {
+        "$oid": "684e673c019836923ae1b3bc"
+      },
+      "paidAt": {
+        "$date": "2025-06-15T06:25:00.208Z"
+      }
+    }
+  ],
+  "totalPaid": 15000,
+  "createdBy": {
+    "$oid": "684e6739019836923ae1b32c"
+  },
+  "balance": 10000,
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.208Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3b8"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "feeType": "tuition",
+  "amount": 50000,
+  "dueDate": {
+    "$date": "2025-07-15T00:00:00.000Z"
+  },
+  "semester": 6,
+  "academicYear": "2025-2026",
+  "description": "Semester 6 Tuition Fee",
+  "status": "paid",
+  "payments": [
+    {
+      "amount": 50000,
+      "paymentMethod": "online",
+      "transactionId": "TXN123456789",
+      "receipt": "RCP001",
+      "_id": {
+        "$oid": "684e673c019836923ae1b3b9"
+      },
+      "paidAt": {
+        "$date": "2025-06-15T06:25:00.207Z"
+      }
+    }
+  ],
+  "totalPaid": 50000,
+  "createdBy": {
+    "$oid": "684e6739019836923ae1b32c"
+  },
+  "balance": 0,
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.207Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684fbde4d3618bbfb10844a0"
+  },
+  "student": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "feeType": "tuition",
+  "amount": 344555,
+  "dueDate": {
+    "$date": "2025-06-17T00:00:00.000Z"
+  },
+  "semester": 6,
+  "academicYear": "2024-25",
+  "description": "",
+  "status": "paid",
+  "totalPaid": 344555,
+  "createdBy": {
+    "$oid": "684e6886dbbbc1a5d2bef835"
+  },
+  "payments": [
+    {
+      "amount": 344555,
+      "paymentMethod": "card",
+      "transactionId": "1234",
+      "receipt": "RCP1750060720060965",
+      "_id": {
+        "$oid": "684fceb049445c1d92ba6f00"
+      },
+      "paidAt": {
+        "$date": "2025-06-16T07:58:40.066Z"
+      }
+    }
+  ],
+  "balance": 0,
+  "createdAt": {
+    "$date": "2025-06-16T06:47:00.414Z"
+  },
+  "__v": 1
+},
+{
+  "_id": {
+    "$oid": "685044e355fec03f5e21d319"
+  },
+  "student": {
+    "$oid": "6850422e8aaec672b7a08fd3"
+  },
+  "feeType": "hostel",
+  "amount": 50000,
+  "dueDate": {
+    "$date": "2025-06-20T00:00:00.000Z"
+  },
+  "semester": 1,
+  "academicYear": "2024-25",
+  "description": "",
+  "status": "pending",
+  "totalPaid": 0,
+  "createdBy": {
+    "$oid": "684e6886dbbbc1a5d2bef835"
+  },
+  "payments": [],
+  "balance": 50000,
+  "createdAt": {
+    "$date": "2025-06-16T16:22:59.789Z"
+  },
+  "__v": 0
+}]

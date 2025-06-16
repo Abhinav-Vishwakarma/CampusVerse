@@ -1,0 +1,88 @@
+[{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3c3"
+  },
+  "title": "Placement Drive - TCS",
+  "description": "Campus placement drive by Tata Consultancy Services",
+  "startDate": {
+    "$date": "2024-02-20T00:00:00.000Z"
+  },
+  "endDate": {
+    "$date": "2024-02-20T00:00:00.000Z"
+  },
+  "location": "Placement Cell",
+  "eventType": "placement",
+  "organizer": {
+    "$oid": "684e6739019836923ae1b32d"
+  },
+  "maxRegistrations": 100,
+  "registrations": [
+    {
+      "student": {
+        "$oid": "684e673a019836923ae1b338"
+      },
+      "status": "registered",
+      "_id": {
+        "$oid": "684e673c019836923ae1b3c4"
+      },
+      "registeredAt": {
+        "$date": "2025-06-15T06:25:00.289Z"
+      }
+    }
+  ],
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.289Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3c0"
+  },
+  "title": "Tech Fest 2024",
+  "description": "Annual technical festival with competitions and workshops",
+  "startDate": {
+    "$date": "2024-03-15T00:00:00.000Z"
+  },
+  "endDate": {
+    "$date": "2024-03-17T00:00:00.000Z"
+  },
+  "location": "Main Auditorium",
+  "eventType": "cultural",
+  "organizer": {
+    "$oid": "684e6739019836923ae1b32c"
+  },
+  "maxRegistrations": 500,
+  "registrations": [
+    {
+      "student": {
+        "$oid": "684e673a019836923ae1b338"
+      },
+      "status": "registered",
+      "_id": {
+        "$oid": "684e673c019836923ae1b3c1"
+      },
+      "registeredAt": {
+        "$date": "2025-06-15T06:25:00.288Z"
+      }
+    },
+    {
+      "student": {
+        "$oid": "684e673a019836923ae1b339"
+      },
+      "status": "registered",
+      "_id": {
+        "$oid": "684e673c019836923ae1b3c2"
+      },
+      "registeredAt": {
+        "$date": "2025-06-15T06:25:00.288Z"
+      }
+    }
+  ],
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.288Z"
+  },
+  "__v": 0
+}]

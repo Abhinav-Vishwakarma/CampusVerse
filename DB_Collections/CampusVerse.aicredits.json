@@ -1,0 +1,105 @@
+[{
+  "_id": {
+    "$oid": "684fb5411534d314b2996db5"
+  },
+  "user": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "totalCredits": 100,
+  "usedCredits": 0,
+  "remainingCredits": 100,
+  "lastReset": {
+    "$date": "2025-06-16T06:10:09.135Z"
+  },
+  "history": [],
+  "createdAt": {
+    "$date": "2025-06-16T06:10:09.136Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684fd07749445c1d92ba6f68"
+  },
+  "user": {
+    "$oid": "684e673a019836923ae1b33a"
+  },
+  "totalCredits": 100,
+  "usedCredits": 60,
+  "remainingCredits": 40,
+  "lastReset": {
+    "$date": "2025-06-16T08:06:15.708Z"
+  },
+  "history": [
+    {
+      "action": "resume_generate",
+      "creditsUsed": 10,
+      "details": "Generated resume using modern template",
+      "_id": {
+        "$oid": "685021a32b5556adfcc1f1d2"
+      },
+      "timestamp": {
+        "$date": "2025-06-16T13:52:35.684Z"
+      }
+    },
+    {
+      "action": "resume_generate",
+      "creditsUsed": 10,
+      "details": "Generated resume using modern template",
+      "_id": {
+        "$oid": "685021e12b5556adfcc1f1dc"
+      },
+      "timestamp": {
+        "$date": "2025-06-16T13:53:37.611Z"
+      }
+    },
+    {
+      "action": "resume_generate",
+      "creditsUsed": 10,
+      "details": "Generated resume using modern template",
+      "_id": {
+        "$oid": "685022aa2b5556adfcc1f1e7"
+      },
+      "timestamp": {
+        "$date": "2025-06-16T13:56:58.537Z"
+      }
+    },
+    {
+      "action": "resume_generate",
+      "creditsUsed": 10,
+      "details": "Generated resume using modern template",
+      "_id": {
+        "$oid": "685023502b5556adfcc1f215"
+      },
+      "timestamp": {
+        "$date": "2025-06-16T13:59:44.098Z"
+      }
+    },
+    {
+      "action": "resume_generate",
+      "creditsUsed": 10,
+      "details": "Generated resume using modern template",
+      "_id": {
+        "$oid": "685025ec2b5556adfcc1f243"
+      },
+      "timestamp": {
+        "$date": "2025-06-16T14:10:52.245Z"
+      }
+    },
+    {
+      "action": "resume_generate",
+      "creditsUsed": 10,
+      "details": "Generated resume using modern template",
+      "_id": {
+        "$oid": "68502b34866026641fa45302"
+      },
+      "timestamp": {
+        "$date": "2025-06-16T14:33:24.591Z"
+      }
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-06-16T08:06:15.708Z"
+  },
+  "__v": 6
+}]

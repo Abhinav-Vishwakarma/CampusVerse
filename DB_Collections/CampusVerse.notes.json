@@ -1,0 +1,82 @@
+[{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3cc"
+  },
+  "title": "Data Structures Notes - Chapter 1",
+  "content": "Introduction to Data Structures and their importance",
+  "course": {
+    "$oid": "684e673b019836923ae1b342"
+  },
+  "semester": 6,
+  "branch": "Computer Science",
+  "subject": "Data Structures",
+  "tags": [
+    "arrays",
+    "introduction",
+    "basics"
+  ],
+  "fileUrl": "/uploads/notes/ds_chapter1.pdf",
+  "fileSize": 1024000,
+  "downloads": 25,
+  "likes": [
+    {
+      "$oid": "684e673a019836923ae1b338"
+    },
+    {
+      "$oid": "684e673a019836923ae1b339"
+    }
+  ],
+  "comments": [
+    {
+      "user": {
+        "$oid": "684e673a019836923ae1b339"
+      },
+      "comment": "Very helpful notes!",
+      "_id": {
+        "$oid": "684e673c019836923ae1b3cd"
+      },
+      "createdAt": {
+        "$date": "2025-06-15T06:25:00.463Z"
+      }
+    }
+  ],
+  "uploadedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.463Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673c019836923ae1b3ce"
+  },
+  "title": "SQL Query Examples",
+  "content": "Common SQL queries with examples",
+  "course": {
+    "$oid": "684e673b019836923ae1b343"
+  },
+  "semester": 6,
+  "branch": "Computer Science",
+  "subject": "Database Management",
+  "tags": [
+    "sql",
+    "queries",
+    "examples"
+  ],
+  "fileUrl": "/uploads/notes/sql_examples.pdf",
+  "fileSize": 512000,
+  "downloads": 18,
+  "likes": [],
+  "uploadedBy": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "isActive": true,
+  "comments": [],
+  "createdAt": {
+    "$date": "2025-06-15T06:25:00.464Z"
+  },
+  "__v": 0
+}]

@@ -1,0 +1,483 @@
+[{
+  "_id": {
+    "$oid": "685021a32b5556adfcc1f1cc"
+  },
+  "user": {
+    "$oid": "684e673a019836923ae1b33a"
+  },
+  "template": "modern",
+  "personalInfo": {
+    "name": "Abhinav",
+    "email": "abhinav@gmail.com",
+    "phone": "9794599624",
+    "location": "Ghaziabad",
+    "linkedin": "",
+    "github": ""
+  },
+  "summary": "nothin",
+  "experience": [
+    {
+      "title": "adsfa",
+      "company": "dsfsf",
+      "duration": "dfsd",
+      "description": "sdff",
+      "_id": {
+        "$oid": "685021a32b5556adfcc1f1cd"
+      }
+    }
+  ],
+  "education": [
+    {
+      "degree": "adsf",
+      "institution": "sdfsf",
+      "year": "sdf",
+      "cgpa": "sdfsdf",
+      "_id": {
+        "$oid": "685021a32b5556adfcc1f1ce"
+      }
+    }
+  ],
+  "skills": [
+    "adfad",
+    "adsfasdf",
+    "adsfs",
+    "asdfa"
+  ],
+  "projects": [
+    {
+      "name": "asdfad",
+      "description": "adf",
+      "technologies": [
+        "adf"
+      ],
+      "link": "adf",
+      "_id": {
+        "$oid": "685021a32b5556adfcc1f1cf"
+      }
+    },
+    {
+      "name": "adsf",
+      "description": "adsf",
+      "technologies": [
+        "adsf"
+      ],
+      "link": "adsf",
+      "_id": {
+        "$oid": "685021a32b5556adfcc1f1d0"
+      }
+    }
+  ],
+  "achievements": [
+    "adfadf",
+    "adsfadsf",
+    "asdfaf"
+  ],
+  "generatedContent": "\n# Abhinav\nabhinav@gmail.com | 9794599624\n\n## Professional Summary\nnothin\n\n## Experience\n\n### adsfa at dsfsf\ndfsd\nsdff\n\n\n## Education\n\n### adsf\nsdfsf (sdf) - CGPA: sdfsdf\n\n\n## Skills\nadfad, adsfasdf, adsfs, asdfa\n\n## Projects\n\n### asdfad\nadf\nTechnologies: adf\n\n### adsf\nadsf\nTechnologies: adsf\n\n    ",
+  "creditsUsed": 10,
+  "createdAt": {
+    "$date": "2025-06-16T13:52:35.550Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "685021e12b5556adfcc1f1d6"
+  },
+  "user": {
+    "$oid": "684e673a019836923ae1b33a"
+  },
+  "template": "modern",
+  "personalInfo": {
+    "name": "Abhinav",
+    "email": "abhinav@gmail.com",
+    "phone": "9794599624",
+    "location": "Ghaziabad",
+    "linkedin": "",
+    "github": ""
+  },
+  "summary": "nothin",
+  "experience": [
+    {
+      "title": "adsfa",
+      "company": "dsfsf",
+      "duration": "dfsd",
+      "description": "sdff",
+      "_id": {
+        "$oid": "685021e12b5556adfcc1f1d7"
+      }
+    }
+  ],
+  "education": [
+    {
+      "degree": "adsf",
+      "institution": "sdfsf",
+      "year": "sdf",
+      "cgpa": "sdfsdf",
+      "_id": {
+        "$oid": "685021e12b5556adfcc1f1d8"
+      }
+    }
+  ],
+  "skills": [
+    "adfad",
+    "adsfasdf",
+    "adsfs",
+    "asdfa"
+  ],
+  "projects": [
+    {
+      "name": "asdfad",
+      "description": "adf",
+      "technologies": [
+        "adf"
+      ],
+      "link": "adf",
+      "_id": {
+        "$oid": "685021e12b5556adfcc1f1d9"
+      }
+    },
+    {
+      "name": "adsf",
+      "description": "adsf",
+      "technologies": [
+        "adsf"
+      ],
+      "link": "adsf",
+      "_id": {
+        "$oid": "685021e12b5556adfcc1f1da"
+      }
+    }
+  ],
+  "achievements": [
+    "adfadf",
+    "adsfadsf",
+    "asdfaf"
+  ],
+  "generatedContent": "\n# Abhinav\nabhinav@gmail.com | 9794599624\n\n## Professional Summary\nnothin\n\n## Experience\n\n### adsfa at dsfsf\ndfsd\nsdff\n\n\n## Education\n\n### adsf\nsdfsf (sdf) - CGPA: sdfsdf\n\n\n## Skills\nadfad, adsfasdf, adsfs, asdfa\n\n## Projects\n\n### asdfad\nadf\nTechnologies: adf\n\n### adsf\nadsf\nTechnologies: adsf\n\n    ",
+  "creditsUsed": 10,
+  "createdAt": {
+    "$date": "2025-06-16T13:53:37.564Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "685022aa2b5556adfcc1f1e1"
+  },
+  "user": {
+    "$oid": "684e673a019836923ae1b33a"
+  },
+  "template": "modern",
+  "personalInfo": {
+    "name": "Abhinav",
+    "email": "abhinav@gmail.com",
+    "phone": "9794599624",
+    "location": "Ghaziabad",
+    "linkedin": "",
+    "github": ""
+  },
+  "summary": "nothin",
+  "experience": [
+    {
+      "title": "adsfa",
+      "company": "dsfsf",
+      "duration": "dfsd",
+      "description": "sdff",
+      "_id": {
+        "$oid": "685022aa2b5556adfcc1f1e2"
+      }
+    }
+  ],
+  "education": [
+    {
+      "degree": "adsf",
+      "institution": "sdfsf",
+      "year": "sdf",
+      "cgpa": "sdfsdf",
+      "_id": {
+        "$oid": "685022aa2b5556adfcc1f1e3"
+      }
+    }
+  ],
+  "skills": [
+    "adfad",
+    "adsfasdf",
+    "adsfs",
+    "asdfa"
+  ],
+  "projects": [
+    {
+      "name": "asdfad",
+      "description": "adf",
+      "technologies": [
+        "adf"
+      ],
+      "link": "adf",
+      "_id": {
+        "$oid": "685022aa2b5556adfcc1f1e4"
+      }
+    },
+    {
+      "name": "adsf",
+      "description": "adsf",
+      "technologies": [
+        "adsf"
+      ],
+      "link": "adsf",
+      "_id": {
+        "$oid": "685022aa2b5556adfcc1f1e5"
+      }
+    }
+  ],
+  "achievements": [
+    "adfadf",
+    "adsfadsf",
+    "asdfaf"
+  ],
+  "generatedContent": "\n# Abhinav\nabhinav@gmail.com | 9794599624\n\n## Professional Summary\nnothin\n\n## Experience\n\n### adsfa at dsfsf\ndfsd\nsdff\n\n\n## Education\n\n### adsf\nsdfsf (sdf) - CGPA: sdfsdf\n\n\n## Skills\nadfad, adsfasdf, adsfs, asdfa\n\n## Projects\n\n### asdfad\nadf\nTechnologies: adf\n\n### adsf\nadsf\nTechnologies: adsf\n\n    ",
+  "creditsUsed": 10,
+  "createdAt": {
+    "$date": "2025-06-16T13:56:58.491Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "685023502b5556adfcc1f20f"
+  },
+  "user": {
+    "$oid": "684e673a019836923ae1b33a"
+  },
+  "template": "modern",
+  "personalInfo": {
+    "name": "Abhinav",
+    "email": "abhinav@gmail.com",
+    "phone": "9794599624",
+    "location": "Ghaziabad",
+    "linkedin": "",
+    "github": ""
+  },
+  "summary": "",
+  "experience": [
+    {
+      "title": "adsfa",
+      "company": "dsfsf",
+      "duration": "dfsd",
+      "description": "sdff",
+      "_id": {
+        "$oid": "685023502b5556adfcc1f210"
+      }
+    }
+  ],
+  "education": [
+    {
+      "degree": "adsf",
+      "institution": "sdfsf",
+      "year": "sdf",
+      "cgpa": "sdfsdf",
+      "_id": {
+        "$oid": "685023502b5556adfcc1f211"
+      }
+    }
+  ],
+  "skills": [
+    "adfad"
+  ],
+  "projects": [
+    {
+      "name": "sdfsdf",
+      "description": "sdf",
+      "technologies": [
+        "sdfs"
+      ],
+      "link": "sdfsf",
+      "_id": {
+        "$oid": "685023502b5556adfcc1f212"
+      }
+    },
+    {
+      "name": "sdfs",
+      "description": "sdfs",
+      "technologies": [
+        "sdfs"
+      ],
+      "link": "sdf",
+      "_id": {
+        "$oid": "685023502b5556adfcc1f213"
+      }
+    }
+  ],
+  "achievements": [
+    "sdfsdfsdf"
+  ],
+  "generatedContent": "\n# Abhinav\nabhinav@gmail.com | 9794599624\n\n## Professional Summary\nMotivated professional with strong technical skills and passion for innovation.\n\n## Experience\n\n### adsfa at dsfsf\ndfsd\nsdff\n\n\n## Education\n\n### adsf\nsdfsf (sdf) - CGPA: sdfsdf\n\n\n## Skills\nadfad\n\n## Projects\n\n### sdfsdf\nsdf\nTechnologies: sdfs\n\n### sdfs\nsdfs\nTechnologies: sdfs\n\n    ",
+  "creditsUsed": 10,
+  "createdAt": {
+    "$date": "2025-06-16T13:59:44.046Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "685025ec2b5556adfcc1f23c"
+  },
+  "user": {
+    "$oid": "684e673a019836923ae1b33a"
+  },
+  "template": "modern",
+  "personalInfo": {
+    "name": "Rohan Sharma",
+    "email": "rohan@gmail.com",
+    "phone": "9854276263",
+    "location": "Bangalore, Karnataka, India",
+    "linkedin": "https://www.linkedin.com/feed/",
+    "github": "https://github.com/"
+  },
+  "summary": "Dynamic and innovative Software Development Engineer II with a Master's from IIT Bombay, possessing a solid track record of delivering high-impact solutions at Amazon and Flipkart. Adept at full-stack development, cloud infrastructure (AWS), and leading significant system migrations. Recognized for contributions to user engagement improvements and operational efficiency, with a commitment to mentoring junior talent and fostering technical excellence.",
+  "experience": [
+    {
+      "title": "Software Development Engineer II",
+      "company": "Amazon India",
+      "duration": "2",
+      "description": "Developed and maintained highly scalable microservices for the Prime Video backend, handling millions of requests daily. Contributed to the design and implementation of new features for content delivery and user personalization, resulting in a 15% improvement in user engagement. Optimized existing data pipelines using Apache Spark, reducing processing time by 30% and improving data freshness. Mentored junior engineers on best practices for clean code and efficient system design. Technologies Used: Java, Spring Boot, AWS (EC2, S3, Lambda, DynamoDB, Kinesis), Kafka, Docker, Kubernetes.",
+      "_id": {
+        "$oid": "685025ec2b5556adfcc1f23d"
+      }
+    },
+    {
+      "title": "Software Engineer",
+      "company": "Flipkart",
+      "duration": "2",
+      "description": "Part of the supply chain management team, focusing on optimizing logistics and inventory systems. Implemented RESTful APIs for real-time order tracking and warehouse management. Collaborated with product managers to translate business requirements into technical specifications. Participated in on-call rotations, ensuring high availability and performance of critical systems. Technologies Used: Python, Django, PostgreSQL, Redis, AWS, Git.",
+      "_id": {
+        "$oid": "685025ec2b5556adfcc1f23e"
+      }
+    }
+  ],
+  "education": [
+    {
+      "degree": "Master of Technology (M.Tech) in Computer Science",
+      "institution": "Indian Institute of Technology Bombay (IIT-B)",
+      "year": "2019-21",
+      "cgpa": "8.5",
+      "_id": {
+        "$oid": "685025ec2b5556adfcc1f23f"
+      }
+    },
+    {
+      "degree": "Bachelor of Technology (B.Tech) in Computer Science and Engineering",
+      "institution": "Vellore Institute of Technology (VIT)",
+      "year": "2015-19",
+      "cgpa": "8.9",
+      "_id": {
+        "$oid": "685025ec2b5556adfcc1f240"
+      }
+    }
+  ],
+  "skills": [
+    "Programming Languages: Java, Python, Go, JavaScript, C++",
+    "Cloud Platforms: AWS (EC2, S3, Lambda, DynamoDB, RDS, Kinesis, SQS, SNS, CloudWatch, VPC), Azure (Basic)",
+    "Databases: PostgreSQL, MySQL, MongoDB, Redis, Cassandra, DynamoDB",
+    "Frameworks & Libraries: Spring Boot, Django, Flask, React, Node.js, TensorFlow, PyTorch, Pandas, NumPy",
+    "Tools & Technologies: Docker, Kubernetes, Kafka, Git, Jenkins, Terraform, RESTful APIs, Microservices, Agile/Scrum"
+  ],
+  "projects": [
+    {
+      "name": "AI-Powered Chatbot for Customer Support",
+      "description": "Developed an intelligent chatbot using Natural Language Processing (NLP) to automate customer support queries for an e-commerce platform. Integrated with a knowledge base and capable of handling FAQs, order tracking, and basic troubleshooting. Achieved 85% accuracy in intent recognition.",
+      "technologies": [
+        "Python",
+        "NLTK",
+        "spaCy",
+        "TensorFlow",
+        "Flask",
+        "MongoDB."
+      ],
+      "link": "nil",
+      "_id": {
+        "$oid": "685025ec2b5556adfcc1f241"
+      }
+    }
+  ],
+  "achievements": [
+    "Awarded \"Innovator of the Year\" at Amazon India (2024) for leading the development of a critical new feature that significantly improved user retention.",
+    "Secured All India Rank (AIR) 150 in GATE (Graduate Aptitude Test in Engineering) Computer Science (2019).",
+    "Published a research paper titled \"Leveraging Transfer Learning for Medical Image Classification\" in the IEEE International Conference on Computing, Communication and Automation (2020)."
+  ],
+  "generatedContent": "\n# Rohan Sharma\nrohan@gmail.com | 9854276263\n\n## Professional Summary\nDynamic and innovative Software Development Engineer II with a Master's from IIT Bombay, possessing a solid track record of delivering high-impact solutions at Amazon and Flipkart. Adept at full-stack development, cloud infrastructure (AWS), and leading significant system migrations. Recognized for contributions to user engagement improvements and operational efficiency, with a commitment to mentoring junior talent and fostering technical excellence.\n\n## Experience\n\n### Software Development Engineer II at Amazon India\n2\nDeveloped and maintained highly scalable microservices for the Prime Video backend, handling millions of requests daily. Contributed to the design and implementation of new features for content delivery and user personalization, resulting in a 15% improvement in user engagement. Optimized existing data pipelines using Apache Spark, reducing processing time by 30% and improving data freshness. Mentored junior engineers on best practices for clean code and efficient system design. Technologies Used: Java, Spring Boot, AWS (EC2, S3, Lambda, DynamoDB, Kinesis), Kafka, Docker, Kubernetes.\n\n### Software Engineer at Flipkart\n2\nPart of the supply chain management team, focusing on optimizing logistics and inventory systems. Implemented RESTful APIs for real-time order tracking and warehouse management. Collaborated with product managers to translate business requirements into technical specifications. Participated in on-call rotations, ensuring high availability and performance of critical systems. Technologies Used: Python, Django, PostgreSQL, Redis, AWS, Git.\n\n\n## Education\n\n### Master of Technology (M.Tech) in Computer Science\nIndian Institute of Technology Bombay (IIT-B) (2019-21) - CGPA: 8.5\n\n### Bachelor of Technology (B.Tech) in Computer Science and Engineering\nVellore Institute of Technology (VIT) (2015-19) - CGPA: 8.9\n\n\n## Skills\nProgramming Languages: Java, Python, Go, JavaScript, C++, Cloud Platforms: AWS (EC2, S3, Lambda, DynamoDB, RDS, Kinesis, SQS, SNS, CloudWatch, VPC), Azure (Basic), Databases: PostgreSQL, MySQL, MongoDB, Redis, Cassandra, DynamoDB, Frameworks & Libraries: Spring Boot, Django, Flask, React, Node.js, TensorFlow, PyTorch, Pandas, NumPy, Tools & Technologies: Docker, Kubernetes, Kafka, Git, Jenkins, Terraform, RESTful APIs, Microservices, Agile/Scrum\n\n## Projects\n\n### AI-Powered Chatbot for Customer Support\nDeveloped an intelligent chatbot using Natural Language Processing (NLP) to automate customer support queries for an e-commerce platform. Integrated with a knowledge base and capable of handling FAQs, order tracking, and basic troubleshooting. Achieved 85% accuracy in intent recognition.\nTechnologies: Python, NLTK, spaCy, TensorFlow, Flask, MongoDB.\n\n    ",
+  "creditsUsed": 10,
+  "createdAt": {
+    "$date": "2025-06-16T14:10:52.091Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68502b34866026641fa452fd"
+  },
+  "user": {
+    "$oid": "684e673a019836923ae1b33a"
+  },
+  "template": "modern",
+  "personalInfo": {
+    "name": "Rohan Sharma",
+    "email": "rohan@gmail.com",
+    "phone": "9854276263",
+    "location": "Bangalore, Karnataka, India",
+    "linkedin": "https://www.linkedin.com/feed/",
+    "github": "https://github.com/"
+  },
+  "summary": "",
+  "experience": [
+    {
+      "title": "Software Development Engineer II",
+      "company": "Amazon India",
+      "duration": "2",
+      "description": "Developed and maintained highly scalable microservices for the Prime Video backend, handling millions of requests daily. Contributed to the design and implementation of new features for content delivery and user personalization, resulting in a 15% improvement in user engagement. Optimized existing data pipelines using Apache Spark, reducing processing time by 30% and improving data freshness. Mentored junior engineers on best practices for clean code and efficient system design. Technologies Used: Java, Spring Boot, AWS (EC2, S3, Lambda, DynamoDB, Kinesis), Kafka, Docker, Kubernetes.",
+      "_id": {
+        "$oid": "68502b34866026641fa452fe"
+      }
+    }
+  ],
+  "education": [
+    {
+      "degree": "Master of Technology (M.Tech) in Computer Science",
+      "institution": "Indian Institute of Technology Bombay (IIT-B)",
+      "year": "2019-21",
+      "cgpa": "8.5",
+      "_id": {
+        "$oid": "68502b34866026641fa452ff"
+      }
+    }
+  ],
+  "skills": [
+    "Programming Languages: Java, Python, Go, JavaScript, C++"
+  ],
+  "projects": [
+    {
+      "name": "AI-Powered Chatbot for Customer Support",
+      "description": "Developed an intelligent chatbot using Natural Language Processing (NLP) to automate customer support queries for an e-commerce platform. Integrated with a knowledge base and capable of handling FAQs, order tracking, and basic troubleshooting. Achieved 85% accuracy in intent recognition.",
+      "technologies": [
+        "Python",
+        "NLTK",
+        "spaCy",
+        "TensorFlow",
+        "Flask",
+        "MongoDB."
+      ],
+      "link": "nil",
+      "_id": {
+        "$oid": "68502b34866026641fa45300"
+      }
+    }
+  ],
+  "achievements": [
+    "Awarded \"Innovator of the Year\" at Amazon India (2024) for leading the development of a critical new feature that significantly improved user retention."
+  ],
+  "generatedContent": "# Rohan Sharma\n\n[rohan@gmail.com](mailto:rohan@gmail.com) | 9854276263 | Bangalore, Karnataka, India | [https://www.linkedin.com/feed/](https://www.linkedin.com/feed/) | [https://github.com/](https://github.com/)\n\n\n**Summary**\n\nHighly motivated and results-oriented Software Development Engineer with 2+ years of experience at Amazon India, specializing in developing and maintaining highly scalable microservices. Proven ability to design, implement, and optimize complex systems, resulting in significant improvements in performance and user engagement.  Passionate about leveraging cutting-edge technologies to solve challenging problems and mentor junior engineers.\n\n\n**Experience**\n\n**Software Development Engineer II | Amazon India | 2022 - Present**\n\n* Developed and maintained highly scalable microservices for the Prime Video backend, handling millions of requests daily.\n* Contributed to the design and implementation of new features for content delivery and user personalization, resulting in a 15% improvement in user engagement.\n* Optimized existing data pipelines using Apache Spark, reducing processing time by 30% and improving data freshness.\n* Mentored junior engineers on best practices for clean code and efficient system design.\n* **Technologies Used:** Java, Spring Boot, AWS (EC2, S3, Lambda, DynamoDB, Kinesis), Kafka, Docker, Kubernetes\n\n\n**Education**\n\n**Master of Technology (M.Tech) in Computer Science | Indian Institute of Technology Bombay (IIT-B) | 2019 - 2021**\n\n* CGPA: 8.5\n\n\n**Skills**\n\n**Programming Languages:** Java, Python, Go, JavaScript, C++\n\n**Technologies:** AWS (EC2, S3, Lambda, DynamoDB, Kinesis), Apache Spark, Kafka, Docker, Kubernetes, Spring Boot, NLTK, spaCy, TensorFlow, Flask, MongoDB\n\n\n**Projects**\n\n**AI-Powered Chatbot for Customer Support**\n\n* Developed an intelligent chatbot using Natural Language Processing (NLP) to automate customer support queries for an e-commerce platform.\n* Integrated with a knowledge base and capable of handling FAQs, order tracking, and basic troubleshooting.\n* Achieved 85% accuracy in intent recognition.\n* **Technologies:** Python, NLTK, spaCy, TensorFlow, Flask, MongoDB\n\n\n**Achievements**\n\n* Awarded \"Innovator of the Year\" at Amazon India (2024) for leading the development of a critical new feature that significantly improved user retention.\n\n",
+  "creditsUsed": 10,
+  "createdAt": {
+    "$date": "2025-06-16T14:33:24.451Z"
+  },
+  "__v": 0
+}]

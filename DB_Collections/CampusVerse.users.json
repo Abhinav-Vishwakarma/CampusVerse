@@ -1,0 +1,240 @@
+[{
+  "_id": {
+    "$oid": "684e6739019836923ae1b331"
+  },
+  "name": "Prof. Priya Sharma",
+  "email": "priya.sharma@campusverse.com",
+  "password": "$2a$10$c5tFXz6eLhLOmb0wIS2b9OMtLrubmQEDCoib/qy45UAIM9zErDbxG",
+  "role": "faculty",
+  "employeeId": "FAC2024002",
+  "department": "Information Technology",
+  "phone": "+91-9876543213",
+  "isActive": true,
+  "aiCredits": 50,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:57.629Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e6739019836923ae1b332"
+  },
+  "name": "Dr. Amit Singh",
+  "email": "amit.singh@campusverse.com",
+  "password": "$2a$10$c5tFXz6eLhLOmb0wIS2b9OMtLrubmQEDCoib/qy45UAIM9zErDbxG",
+  "role": "faculty",
+  "employeeId": "FAC2024003",
+  "department": "Electronics",
+  "phone": "+91-9876543214",
+  "isActive": true,
+  "aiCredits": 50,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:57.630Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e6739019836923ae1b330"
+  },
+  "name": "Dr. Rajesh Kumar",
+  "email": "rajesh.kumar@campusverse.com",
+  "password": "$2a$10$c5tFXz6eLhLOmb0wIS2b9OMtLrubmQEDCoib/qy45UAIM9zErDbxG",
+  "role": "faculty",
+  "employeeId": "FAC2024001",
+  "department": "Computer Science",
+  "phone": "+91-9876543212",
+  "isActive": true,
+  "aiCredits": 50,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:57.627Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e6739019836923ae1b333"
+  },
+  "name": "Prof. Neha Gupta",
+  "email": "neha.gupta@campusverse.com",
+  "password": "$2a$10$c5tFXz6eLhLOmb0wIS2b9OMtLrubmQEDCoib/qy45UAIM9zErDbxG",
+  "role": "faculty",
+  "employeeId": "FAC2024004",
+  "department": "Mechanical",
+  "phone": "+91-9876543215",
+  "isActive": true,
+  "aiCredits": 50,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:57.631Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673a019836923ae1b338"
+  },
+  "name": "Arjun Patel",
+  "email": "arjun.patel@student.campusverse.com",
+  "password": "$2a$10$c5tFXz6eLhLOmb0wIS2b9OMtLrubmQEDCoib/qy45UAIM9zErDbxG",
+  "role": "student",
+  "admissionNumber": "CS2021001",
+  "course": "B.Tech",
+  "branch": "Computer Science",
+  "semester": 6,
+  "section": "A",
+  "phone": "+91-9876543216",
+  "isActive": true,
+  "aiCredits": 10,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:58.240Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673a019836923ae1b339"
+  },
+  "name": "Sneha Reddy",
+  "email": "sneha.reddy@student.campusverse.com",
+  "password": "$2a$10$c5tFXz6eLhLOmb0wIS2b9OMtLrubmQEDCoib/qy45UAIM9zErDbxG",
+  "role": "student",
+  "admissionNumber": "CS2021002",
+  "course": "B.Tech",
+  "branch": "Computer Science",
+  "semester": 6,
+  "section": "A",
+  "phone": "+91-9876543217",
+  "isActive": true,
+  "aiCredits": 10,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:58.241Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e673a019836923ae1b33a"
+  },
+  "name": "Rohit Sharma",
+  "email": "rohit.sharma@student.campusverse.com",
+  "password": "$2a$10$c5tFXz6eLhLOmb0wIS2b9OMtLrubmQEDCoib/qy45UAIM9zErDbxG",
+  "role": "student",
+  "admissionNumber": "IT2022001",
+  "course": "B.Tech",
+  "branch": "CSE",
+  "semester": 4,
+  "section": "B",
+  "phone": "+91-9876543218",
+  "isActive": true,
+  "aiCredits": 10,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:58.242Z"
+  },
+  "__v": 0,
+  "enrolledCourses": [
+    "Web Technologies"
+  ]
+},
+{
+  "_id": {
+    "$oid": "684e673a019836923ae1b33b"
+  },
+  "name": "Kavya Nair",
+  "email": "kavya.nair@student.campusverse.com",
+  "password": "$2a$10$c5tFXz6eLhLOmb0wIS2b9OMtLrubmQEDCoib/qy45UAIM9zErDbxG",
+  "role": "student",
+  "admissionNumber": "EC2022001",
+  "course": "B.Tech",
+  "branch": "Electronics",
+  "semester": 4,
+  "section": "A",
+  "phone": "+91-9876543219",
+  "isActive": true,
+  "aiCredits": 10,
+  "createdAt": {
+    "$date": "2025-06-15T06:24:58.243Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e6886dbbbc1a5d2bef835"
+  },
+  "name": "abhinav",
+  "email": "admin@gmail.com",
+  "password": "$2a$10$c5tFXz6eLhLOmb0wIS2b9OMtLrubmQEDCoib/qy45UAIM9zErDbxG",
+  "role": "admin",
+  "phone": "",
+  "isActive": true,
+  "aiCredits": 10,
+  "createdAt": {
+    "$date": "2025-06-15T06:30:30.774Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "684e796ab2ed639e8fc9bbcc"
+  },
+  "name": "Alice Smith",
+  "email": "alice.smith@example.com",
+  "password": "$2a$10$DB8fh/NSCUkXg57Ilri7QeZfhGimZN.B4GelPrKnWg3B7LjIHK.1K",
+  "role": "student",
+  "admissionNumber": "CS2025123",
+  "course": "B.Tech",
+  "branch": "Computer Science",
+  "semester": 5,
+  "section": "A",
+  "phone": "9876543210",
+  "isActive": true,
+  "aiCredits": 10,
+  "createdAt": {
+    "$date": "2025-06-15T07:42:34.980Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6850419a299768b1a32ffc69"
+  },
+  "name": "priya singh",
+  "email": "priya@capmus.in",
+  "password": "$2a$10$X.Nlb/bau8eYeTkXq8j5OOARdeHNjgAQTtueQSd7JpSjzDhY8FW9u",
+  "role": "student",
+  "admissionNumber": "ME2025172",
+  "course": "BTech",
+  "branch": "ME",
+  "semester": 1,
+  "section": "A",
+  "enrolledCourses": [],
+  "phone": "",
+  "isActive": true,
+  "aiCredits": 10,
+  "createdAt": {
+    "$date": "2025-06-16T16:08:58.009Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6850422e8aaec672b7a08fd3"
+  },
+  "name": "Apeksha",
+  "email": "ap@gmail.com",
+  "password": "$2a$10$uU0hTdueAh9qxzd1c.eTRu/Ox2PPO3bWFQJppQX569GouPraUIGGG",
+  "role": "student",
+  "admissionNumber": "CSE2025479",
+  "course": "BTech",
+  "branch": "CSE",
+  "semester": 1,
+  "section": "A",
+  "enrolledCourses": [],
+  "phone": "",
+  "isActive": true,
+  "aiCredits": 10,
+  "createdAt": {
+    "$date": "2025-06-16T16:11:26.171Z"
+  },
+  "__v": 0
+}]
