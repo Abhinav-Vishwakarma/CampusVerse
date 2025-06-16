@@ -30,6 +30,7 @@ const AttendancePage = () => {
   }, [])
 
   useEffect(() => {
+    // Only fetch attendance if a valid course ID is selected
     if (selectedCourse) {
       fetchAttendance()
     }
@@ -38,16 +39,11 @@ const AttendancePage = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await coursesAPI.getStudentCourses(user.id)
-      console.log(response.data.courses)
-
-      // const userCourses = response.data.courses.map((x)=>{
-      //   x
-      // })
+      const response = await coursesAPI.getCourses(user.id)
       setCourses(response.data.courses)
-      
-      if (courses.length > 0) {
-        setSelectedCourse(courses[0].name)
+      // Set selectedCourse to the first course's _id (not name)
+      if (response.data.courses && response.data.courses.length > 0) {
+        setSelectedCourse(response.data.courses[0]._id)
       }
     } catch (error) {
       showError("Failed to fetch courses")
@@ -59,12 +55,12 @@ const AttendancePage = () => {
   const fetchAttendance = async () => {
     try {
       if (user.role === "student") {
-        const response = await attendanceAPI.getStudentAttendance(user.id, selectedCourse)
+        const response = await attendanceAPI.getAttendance(user.id, selectedCourse)
         setAttendanceData(response.data.records || [])
         setStats(response.data.stats || {})
       } else {
         // For faculty/admin, get all attendance for the course
-        const response = await attendanceAPI.getCourseAttendance(selectedCourse)
+        const response = await attendanceAPI.getAttendance(selectedCourse)
         setAttendanceData(response.data.records || [])
         setStats(response.data.overallStats || {})
       }

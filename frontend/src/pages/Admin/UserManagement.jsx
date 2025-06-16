@@ -203,7 +203,13 @@ const UserManagement = () => {
 
       const response = await usersAPI.updateUser(userId, userData)
       if (response?.data) {
-        setUsers((prev) => prev.map((user) => (user._id === userId || user.id === userId ? response.data : user)))
+        // Use response.data.data (the updated user object)
+        const updatedUser = response.data.data || response.data
+        setUsers((prev) =>
+          prev.map((user) =>
+            user._id === userId || user.id === userId ? updatedUser : user
+          )
+        )
         setShowModal(false)
         setSelectedUser(null)
         showSuccess("User updated successfully")
@@ -676,11 +682,11 @@ const UserManagement = () => {
                         className="input-field"
                       >
                         <option value="">Select Branch</option>
-                        <option value="CSE">Computer Science</option>
-                        <option value="ECE">Electronics</option>
-                        <option value="ME">Mechanical</option>
-                        <option value="CE">Civil</option>
-                        <option value="EE">Electrical</option>
+                        <option value="CSE">CSE</option>
+                      <option value="ECE">ECE</option>
+                      <option value="ME">ME</option>
+                      <option value="CE">CE</option>
+                      <option value="EE">EE</option>
                       </select>
                     </div>
                     <div>
@@ -734,11 +740,11 @@ const UserManagement = () => {
                       className="input-field"
                     >
                       <option value="">Select Department</option>
-                      <option value="CSE">Computer Science</option>
-                      <option value="ECE">Electronics</option>
-                      <option value="ME">Mechanical</option>
-                      <option value="CE">Civil</option>
-                      <option value="EE">Electrical</option>
+                      <option value="CSE">CSE</option>
+                      <option value="ECE">ECE</option>
+                      <option value="ME">ME</option>
+                      <option value="CE">CE</option>
+                      <option value="EE">EE</option>
                     </select>
                   </div>
                 </>

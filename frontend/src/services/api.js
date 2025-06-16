@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:5000/api"
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api" ;
 
 // Create axios-like instance for consistent API calls
 const apiRequest = async (endpoint, options = {}) => {
@@ -559,6 +559,13 @@ export const aiAPI = {
     apiRequest("/ai/credits/bulk-allocate", {
       method: "POST",
       body: allocationsData,
+    }),
+
+  uploadATSResume: (formData) =>
+    apiRequest("/ai/ats/upload", {
+      method: "POST",
+      body: formData,
+      headers: {}, // Let browser set Content-Type for FormData
     }),
 }
 

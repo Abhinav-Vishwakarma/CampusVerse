@@ -13,7 +13,7 @@ import {
   Loader2
 } from "lucide-react"
 import { useNavigate } from 'react-router-dom'
-import { coursesAPI } from '../../services/api'
+import { coursesAPI, usersAPI } from '../../services/api'
 import { debounce } from 'lodash'
 
 const AVAILABLE_BRANCHES = [
@@ -64,9 +64,11 @@ const CoursesPage = () => {
   const [searchParams, setSearchParams] = useState({
     branch: '',
     semester: '',
-    faculty: '',
-    type: ''
+    faculty: ''
   })
+
+  // Faculty list for course creation
+  const [facultyList, setFacultyList] = useState([])
 
   useEffect(() => {
     fetchCourses()
@@ -75,6 +77,22 @@ const CoursesPage = () => {
   useEffect(() => {
     filterCourses()
   }, [courses, searchTerm, selectedSemester, selectedBranch])
+
+  useEffect(() => {
+    if (user?.role === "admin") {
+      fetchFacultyList()
+    }
+  }, [user])
+
+  const fetchFacultyList = async () => {
+    try {
+      const res = await usersAPI.getUsers({"role":"faculty"})
+      console.log(res)
+      setFacultyList(res.data?.users || [])
+    } catch {
+      setFacultyList([])
+    }
+  }
 
   const debouncedSearch = useCallback(
     debounce((searchTerm) => {
@@ -128,15 +146,29 @@ const CoursesPage = () => {
     setFilteredCourses(filtered)
   }
 
+  // Enroll student in course
   const handleEnroll = async (courseId) => {
     try {
-      const response = await coursesAPI.enrollStudent(courseId, user.id)
+      const response = await coursesAPI.enrollStudent(courseId, user._id || user.id)
       if (response?.data?.success) {
         showSuccess("Successfully enrolled in course!")
         fetchCourses()
       }
     } catch (error) {
       showError(error.response?.data?.message || "Failed to enroll in course")
+    }
+  }
+
+  // Unenroll student from course
+  const handleUnenroll = async (courseId) => {
+    try {
+      const response = await coursesAPI.unenrollStudent(courseId, user._id || user.id)
+      if (response?.data?.success) {
+        showSuccess("Successfully unenrolled from course!")
+        fetchCourses()
+      }
+    } catch (error) {
+      showError(error.response?.data?.message || "Failed to unenroll from course")
     }
   }
 
@@ -315,9 +347,12 @@ const CoursesPage = () => {
                     className="input-field"
                     required
                   >
-                   <option value="">All Faculty</option>
-                    <option value="teacher">Teacher</option>
-                    {/* Fetch and map faculty users here */}
+                    <option value="">Select Faculty</option>
+                    {facultyList.map(faculty => (
+                      <option key={faculty._id} value={faculty._id}>
+                        {faculty.name} ({faculty.email})
+                      </option>
+                    ))}
                   </select>
                 </div>
               )}
@@ -482,7 +517,11 @@ const CoursesPage = () => {
               className="input-field"
             >
               <option value="">All Faculty</option>
-              {/* Add faculty options if available */}
+              {facultyList.map(faculty => (
+                <option key={faculty._id} value={faculty._id}>
+                  {faculty.name} ({faculty.email})
+                </option>
+              ))}
             </select>
           )}
 
@@ -568,12 +607,6 @@ const CoursesPage = () => {
                   {course.faculty?.name || 'Not assigned'}
                 </span>
               </div>
-              {/* <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Type:</span>
-                <span className="font-medium text-gray-900 dark:text-white">
-                  {course.type}
-                </span>
-              </div> */}
             </div>
 
             <div className="flex space-x-2">
@@ -584,14 +617,21 @@ const CoursesPage = () => {
                 View Details
               </button>
               {user?.role === "student" && (
-                <button
-                  onClick={() => handleEnroll(course._id)}
-                  className={`btn-primary flex-1 ${course.students?.includes(user._id) ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  disabled={course.students?.includes(user._id)}
-                >
-                  {course.students?.includes(user._id) ? 'Enrolled' : 'Enroll'}
-                </button>
+                course.students?.includes(user._id || user.id) ? (
+                  <button
+                    onClick={() => handleUnenroll(course._id)}
+                    className="btn-danger flex-1"
+                  >
+                    Unenroll
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleEnroll(course._id)}
+                    className="btn-primary flex-1"
+                  >
+                    Enroll
+                  </button>
+                )
               )}
             </div>
           </div>

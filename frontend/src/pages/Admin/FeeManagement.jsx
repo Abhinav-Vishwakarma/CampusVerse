@@ -18,6 +18,7 @@ import {
   X,
   Users,
   BookOpen,
+  CreditCardIcon
 } from "lucide-react"
 
 const FEE_TYPES = [
@@ -150,6 +151,7 @@ const FeeManagement = () => {
   const fetchStats = async () => {
     try {
       const res = await feesAPI.getFeeStats()
+      console.log(res)
       if (res?.data) setStats(res.data)
     } catch {
       setStats({ totalAmount: 0, paidAmount: 0, pendingAmount: 0, overdueAmount: 0 })
@@ -697,7 +699,7 @@ const FeeManagement = () => {
                           setShowPayModal(true)
                         }}
                       >
-                        <Eye className="w-4 h-4" />
+                        <CreditCardIcon className="w-4 h-4" />
                       </button>
                       <button
                         className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
