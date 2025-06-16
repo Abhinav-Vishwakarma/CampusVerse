@@ -413,9 +413,10 @@ router.post(
       // --- Generate admissionNumber or employeeId if not provided ---
 
       if (role === "student" && !admissionNumber) {
-        const branchPrefix = branch ? branch.substring(0, 2).toUpperCase() : 'UN';
-        admissionNumber = `<span class="math-inline">\{branchPrefix\}</span>{new Date().getFullYear()}${Math.floor(Math.random() * 1000).toString().padStart(3, "0")}`;
-      }
+  const branchPrefix = branch ? branch.toUpperCase() : 'UN';
+  admissionNumber = `${branchPrefix}${new Date().getFullYear()}${Math.floor(Math.random() * 1000).toString().padStart(5, "0")}`;
+}
+
       // for admin
       if (role === "admin" && employeeId === "") {
         employeeId = `ADM${new Date().getFullYear()}${Math.floor(Math.random() * 1000).toString().padStart(5, "0")}`;
