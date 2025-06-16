@@ -2,8 +2,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { useAuth } from "./contexts/AuthContext"
 import { useTheme } from "./contexts/ThemeContext"
-import Navbar from "./components/Layout/Navbar"
 import Sidebar from "./components/Layout/Sidebar"
+import Navbar from "./components/Layout/Navbar"
 import Login from "./pages/Auth/Login"
 import Register from "./pages/Auth/Register"
 import StudentDashboard from "./pages/Student/Dashboard"
@@ -54,11 +54,11 @@ function App() {
         <Router>
           <NotificationToast />
           {user ? (
-            <div className="flex">
+            <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
               <Sidebar />
-              <div className="flex-1">
+              <div className="flex-1 flex flex-col" style={{ marginLeft: 256 }}>
                 <Navbar />
-                <main className="p-6">
+                <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-gray-50 dark:bg-gray-900">
                   <Routes>
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route

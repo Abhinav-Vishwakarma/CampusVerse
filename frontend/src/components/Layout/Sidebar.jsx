@@ -25,12 +25,10 @@ const Sidebar = () => {
 
   const getMenuItems = () => {
     const baseItems = [{ icon: Home, label: "Dashboard", path: "/dashboard" }]
-
     if (user?.role === "student") {
       return [
         ...baseItems,
         { icon: BookOpen, label: "Courses", path: "/courses" },
-        // { icon: Award, label: "Performance", path: "/performance" },
         { icon: ClipboardList, label: "Attendance", path: "/attendance" },
         { icon: GraduationCap, label: "Quizzes", path: "/quizzes" },
         { icon: Upload, label: "Assignments", path: "/assignments" },
@@ -39,10 +37,9 @@ const Sidebar = () => {
         { icon: CreditCard, label: "Fee Records", path: "/fees" },
         { icon: Briefcase, label: "Placement Records", path: "/placements" },
         { icon: Bell, label: "Notifications", path: "/notifications" },
-        { icon: Settings, label: "Settings", path: "/settings" },
+        // { icon: Settings, label: "Settings", path: "/settings" },
       ]
     }
-
     if (user?.role === "faculty") {
       return [
         ...baseItems,
@@ -52,10 +49,9 @@ const Sidebar = () => {
         { icon: FileText, label: "Course Materials", path: "/materials" },
         { icon: Award, label: "Performance Tracking", path: "/performance" },
         { icon: Bell, label: "Notifications", path: "/notifications" },
-        { icon: Settings, label: "Settings", path: "/settings" },
+        // { icon: Settings, label: "Settings", path: "/settings" },
       ]
     }
-
     if (user?.role === "admin") {
       return [
         ...baseItems,
@@ -65,10 +61,9 @@ const Sidebar = () => {
         { icon: Briefcase, label: "Placement Management", path: "/placement-management" },
         { icon: BarChart3, label: "Analytics", path: "/analytics" },
         { icon: Bell, label: "Notifications", path: "/notifications" },
-        { icon: Settings, label: "Settings", path: "/settings" },
+        // { icon: Settings, label: "Settings", path: "/settings" },
       ]
     }
-
     return baseItems
   }
 
@@ -79,26 +74,46 @@ const Sidebar = () => {
   }
 
   return (
-    <div className="w-64 bg-white dark:bg-gray-800 shadow-sm border-r border-gray-200 dark:border-gray-700 min-h-screen">
-      <div className="p-6">
-        <div className="space-y-2">
-          {menuItems.map((item, index) => (
-            <button
-              key={index}
-              onClick={() => handleNavigation(item.path)}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                location.pathname === item.path
-                  ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="font-medium">{item.label}</span>
-            </button>
-          ))}
-        </div>
+    <aside
+      className="fixed left-0 top-0 z-30 h-screen w-64 bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 shadow-xl flex flex-col"
+      style={{ borderTopRightRadius: "2rem", borderBottomRightRadius: "2rem" }}
+    >
+      <div className="flex items-center justify-center h-20 mb-4 mt-2">
+        <span className="text-2xl font-extrabold text-white tracking-wide drop-shadow-lg">CampusVerse</span>
       </div>
-    </div>
+      <nav className="flex-1 overflow-y-auto px-2 pb-6">
+        <ul className="space-y-2">
+          {menuItems.map((item, index) => {
+            const isActive = location.pathname === item.path
+            return (
+              <li key={index}>
+                <button
+                  onClick={() => handleNavigation(item.path)}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-full transition-all duration-200
+                    ${
+                      isActive
+                        ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-lg scale-105"
+                        : "text-blue-100 hover:bg-blue-800 hover:text-white"
+                    }
+                  `}
+                  style={{
+                    boxShadow: isActive
+                      ? "0 4px 24px 0 rgba(59,130,246,0.15)"
+                      : undefined,
+                  }}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span className="font-medium">{item.label}</span>
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
+      <div className="p-4 text-xs text-blue-200 opacity-70 text-center">
+        &copy; {new Date().getFullYear()} CampusVerse
+      </div>
+    </aside>
   )
 }
 
