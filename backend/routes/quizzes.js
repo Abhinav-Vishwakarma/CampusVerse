@@ -160,8 +160,6 @@ router.post(
     body("questions").isArray({ min: 1 }).withMessage("At least one question is required"),
     body("startDate").isISO8601().withMessage("Valid start date is required"),
     body("endDate").isISO8601().withMessage("Valid end date is required"),
-    body("loginStartTime").isISO8601().withMessage("Valid login start time is required"),
-    body("loginEndTime").isISO8601().withMessage("Valid login end time is required"),
   ],
   async (req, res) => {
     try {
