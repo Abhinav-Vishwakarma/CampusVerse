@@ -50,7 +50,7 @@ const QuizManagement = () => {
     ;(async () => {
       try {
         setLoading(true)
-        const res = await coursesAPI.getCourses({ faculty: user._id, active: true, limit: 100 })
+        const res = await coursesAPI.getCourses({ faculty: user.id, active: true, limit: 100 })
         setCourses(res.data?.courses || [])
       } catch {
         setCourses([])
