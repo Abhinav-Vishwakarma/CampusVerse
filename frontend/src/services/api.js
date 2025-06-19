@@ -5,17 +5,24 @@ const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`
   const token = localStorage.getItem("campusverse_token")
 
-  const config = {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
-    ...options,
+  let headers = {
+    ...(token && { Authorization: `Bearer ${token}` }),
+    ...(options.headers || {}),
   }
 
-  if (config.body && typeof config.body === "object") {
-    config.body = JSON.stringify(config.body)
+  let body = options.body
+  // If body is FormData, do NOT set Content-Type and do NOT stringify
+  const isFormData = body instanceof FormData
+
+  if (!isFormData && body && typeof body === "object") {
+    headers["Content-Type"] = "application/json"
+    body = JSON.stringify(body)
+  }
+
+  const config = {
+    method: options.method || "GET",
+    headers,
+    body: isFormData ? body : body || undefined,
   }
 
   try {
@@ -545,6 +552,7 @@ export const aiAPI = {
     apiRequest("/ai/ats/check", {
       method: "POST",
       body: resumeData,
+      headers: {} 
     }),
 
   generateRoadmap: (preferences) =>
@@ -567,6 +575,12 @@ export const aiAPI = {
       body: formData,
       headers: {}, // Let browser set Content-Type for FormData
     }),
+
+  // For fetching, deleting roadmaps
+  getRoadmaps: (userId) => apiRequest(`/ai/roadmaps?userId=${userId}`, { method: "GET" }),
+  deleteRoadmap: (roadmapId) => apiRequest(`/ai/roadmaps/${roadmapId}`, { method: "DELETE" }),
+  getResumes: (userId) => apiRequest(`/ai/resumes?userId=${userId}`, { method: "GET" }),
+  deleteResume: (resumeId) => apiRequest(`/ai/resumes/${resumeId}`, { method: "DELETE" }),
 }
 
 // Analytics API
