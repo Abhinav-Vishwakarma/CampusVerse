@@ -3,6 +3,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { GoogleGenerativeAI } = require("@google/generative-ai")
 const fs = require("fs")
+const path = require("path");
 const multer = require("multer")
 const pdfParse = require("pdf-parse")
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
@@ -149,7 +150,7 @@ const atsReportSchema = new mongoose.Schema({
   }
 });
 
-// Roadmap Schema
+// Roadmap Schema with flexible "roadmap" field
 const roadmapSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -173,18 +174,10 @@ const roadmapSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  phases: [{
-    title: String,
-    duration: String,
-    description: String,
-    topics: [String],
-    resources: [{
-      title: String,
-      type: String,
-      url: String
-    }],
-    milestones: [String]
-  }],
+  phases: {
+    type: mongoose.Schema.Types.Mixed, 
+    required: true
+  },
   creditsUsed: {
     type: Number,
     default: 15
@@ -195,6 +188,8 @@ const roadmapSchema = new mongoose.Schema({
   }
 });
 
+// Use disk storage with auto filename
+const upload = multer({ dest: "uploads/" });
 const AICredit = mongoose.model('AICredit', aiCreditSchema);
 const Resume = mongoose.model('Resume', resumeSchema);
 const ATSReport = mongoose.model('ATSReport', atsReportSchema);
@@ -386,97 +381,195 @@ Format the resume with clear sections, bold headings, and bullet points where ap
   }
 });
 
-// POST /api/ai/ats/check - Check resume against job description
-router.post('/ats/check', [
-  body('userId').notEmpty().withMessage('User ID is required'),
-  body('resumeContent').notEmpty().withMessage('Resume content is required'),
-  body('jobDescription').notEmpty().withMessage('Job description is required')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation errors',
-        errors: errors.array()
-      });
-    }
+// // POST /api/ai/ats/check - Check resume against job description
+router.post("/ats/check", upload.single("file"), async (req, res) => {
+  console.log(req.body)
+  const { userId, jobDescription } = req.body;
+  const filePath = req.file?.path;
 
-    const { userId, resumeContent, jobDescription } = req.body;
+  if (!userId || !filePath || !jobDescription) {
+    if (filePath) fs.unlink(filePath, () => {});
+    return res.status(400).json({
+      success: false,
+      message: "User ID, resume file, and job description are required"
+    });
+  }
+
+  try {
+    const pdfBuffer = fs.readFileSync(filePath);
+    const pdfData = await pdfParse(pdfBuffer);
+    const resumeContent = pdfData.text;
+
+    // Clean up temp file
+    fs.unlink(filePath, (err) => {
+      if (err) console.warn("File cleanup error:", err.message);
+    });
+
     const creditsRequired = 5;
 
-    // Check user credits
+    // Check credits
     const credits = await AICredit.findOne({ user: userId });
     if (!credits || credits.remainingCredits < creditsRequired) {
       return res.status(400).json({
         success: false,
-        message: 'Insufficient AI credits'
+        message: "Insufficient AI credits"
       });
     }
 
-    // Gemini prompt for ATS
+    // Gemini prompt
     const prompt = `
 You are an ATS (Applicant Tracking System) expert. Analyze the following resume (in plain text) against the provided job description. 
-- Give an overall ATS compatibility score (0-100).
+- Give an overall ATS compatibility score (0–100).
 - List matched keywords, missing keywords, and provide at least 3 actionable suggestions for improvement.
-- Also, provide a format score, content score, and keyword score (each 0-100).
+- Also, provide a format score, content score, and keyword score (each 0–100).
 Return the result as a JSON object with keys: score, analysis { matchedKeywords, missingKeywords, suggestions, formatScore, contentScore, keywordScore }.
 
-
 Resume:
-${req.body.resumeContent}
+${resumeContent}
 
 Job Description:
-${req.body.jobDescription}
-    `
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
-    const result = await model.generateContent(prompt)
-    // Parse Gemini's JSON response
-    let analysisResult
-    try {
-      analysisResult = JSON.parse(result.response.text())
-    } catch (e) {
-      // fallback: try to extract JSON from text
-      const match = result.response.text().match(/\{[\s\S]*\}/)
-      analysisResult = match ? JSON.parse(match[0]) : null
-    }
-    if (!analysisResult) throw new Error("Gemini response not in expected format")
+${jobDescription}
+    `;
 
-    // Create ATS report
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent(prompt);
+
+    let analysisResult;
+    try {
+      analysisResult = JSON.parse(result.response.text());
+    } catch (e) {
+      const match = result.response.text().match(/\{[\s\S]*\}/);
+      analysisResult = match ? JSON.parse(match[0]) : null;
+    }
+
+    if (!analysisResult) throw new Error("Gemini response not in expected format");
+
     const atsReport = new ATSReport({
-      user: req.body.userId,
-      resumeContent: req.body.resumeContent,
-      jobDescription: req.body.jobDescription,
+      user: userId,
+      resumeContent,
+      jobDescription,
       score: analysisResult.score,
       analysis: analysisResult.analysis,
       creditsUsed: creditsRequired
-    })
-    await atsReport.save()
-    credits.usedCredits += creditsRequired
-    credits.remainingCredits -= creditsRequired
+    });
+
+    await atsReport.save();
+    credits.usedCredits += creditsRequired;
+    credits.remainingCredits -= creditsRequired;
     credits.history.push({
-      action: 'ats_check',
+      action: "ats_check",
       creditsUsed: creditsRequired,
       details: `ATS analysis completed with score: ${analysisResult.score}`
-    })
-    await credits.save()
+    });
+    await credits.save();
 
     res.status(201).json({
       success: true,
-      message: 'ATS analysis completed',
+      message: "ATS analysis completed",
       data: {
         report: atsReport,
         creditsRemaining: credits.remainingCredits
       }
-    })
+    });
   } catch (error) {
+    if (filePath) fs.unlink(filePath, () => {});
     res.status(500).json({
       success: false,
-      message: 'Error performing ATS check',
+      message: "Error performing ATS check",
       error: error.message
-    })
+    });
   }
 });
+// router.post('/ats/check', [
+//   body('userId').notEmpty().withMessage('User ID is required'),
+//   body('resumeContent').notEmpty().withMessage('Resume content is required'),
+//   body('jobDescription').notEmpty().withMessage('Job description is required')
+// ], async (req, res) => {
+//   try {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Validation errors',
+//         errors: errors.array()
+//       });
+//     }
+
+//     const { userId, resumeContent, jobDescription } = req.body;
+//     const creditsRequired = 5;
+
+//     // Check user credits
+//     const credits = await AICredit.findOne({ user: userId });
+//     if (!credits || credits.remainingCredits < creditsRequired) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Insufficient AI credits'
+//       });
+//     }
+
+//     // Gemini prompt for ATS
+//     const prompt = `
+// You are an ATS (Applicant Tracking System) expert. Analyze the following resume (in plain text) against the provided job description. 
+// - Give an overall ATS compatibility score (0-100).
+// - List matched keywords, missing keywords, and provide at least 3 actionable suggestions for improvement.
+// - Also, provide a format score, content score, and keyword score (each 0-100).
+// Return the result as a JSON object with keys: score, analysis { matchedKeywords, missingKeywords, suggestions, formatScore, contentScore, keywordScore }.
+
+
+// Resume:
+// ${req.body.resumeContent}
+
+// Job Description:
+// ${req.body.jobDescription}
+//     `
+//     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+//     const result = await model.generateContent(prompt)
+//     // Parse Gemini's JSON response
+//     let analysisResult
+//     try {
+//       analysisResult = JSON.parse(result.response.text())
+//     } catch (e) {
+//       // fallback: try to extract JSON from text
+//       const match = result.response.text().match(/\{[\s\S]*\}/)
+//       analysisResult = match ? JSON.parse(match[0]) : null
+//     }
+//     if (!analysisResult) throw new Error("Gemini response not in expected format")
+
+//     // Create ATS report
+//     const atsReport = new ATSReport({
+//       user: req.body.userId,
+//       resumeContent: req.body.resumeContent,
+//       jobDescription: req.body.jobDescription,
+//       score: analysisResult.score,
+//       analysis: analysisResult.analysis,
+//       creditsUsed: creditsRequired
+//     })
+//     await atsReport.save()
+//     credits.usedCredits += creditsRequired
+//     credits.remainingCredits -= creditsRequired
+//     credits.history.push({
+//       action: 'ats_check',
+//       creditsUsed: creditsRequired,
+//       details: `ATS analysis completed with score: ${analysisResult.score}`
+//     })
+//     await credits.save()
+
+//     res.status(201).json({
+//       success: true,
+//       message: 'ATS analysis completed',
+//       data: {
+//         report: atsReport,
+//         creditsRemaining: credits.remainingCredits
+//       }
+//     })
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: 'Error performing ATS check',
+//       error: error.message
+//     })
+//   }
+// });
 
 // POST /api/ai/roadmap/generate - Generate learning roadmap
 router.post('/roadmap/generate', [
@@ -491,7 +584,7 @@ router.post('/roadmap/generate', [
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        message: 'Validation errors',
+        message: 'Validation errors', 
         errors: errors.array()
       });
     }
@@ -566,6 +659,7 @@ Return only the JSON object, nothing else.
 
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 const result = await model.generateContent(prompt)
+
 let roadmapObj
 try {
   roadmapObj = JSON.parse(result.response.text())
@@ -609,7 +703,67 @@ res.status(201).json({
   })
 }
 });
+// GET /api/ai/roadmap/ - Fetech User Roadmaps
+router.get("/roadmaps", async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ success: false, message: "User ID is required" });
+    }
 
+    const roadmaps = await Roadmap.find({ user: userId }).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: roadmaps });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching roadmaps", error: error.message });
+  }
+});
+
+// DELETE /api/ai/roadmap/roadmaps/:roadmapId - Delete User Roadmap
+router.delete("/roadmaps/:roadmapId", async (req, res) => {
+  try {
+    const { roadmapId } = req.params;
+    const deleted = await Roadmap.findByIdAndDelete(roadmapId);
+
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: "Roadmap not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Roadmap deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error deleting roadmap", error: error.message });
+  }
+});
+
+// GET /api/ai/resumes/ - Fetech User Roadmaps
+router.get("/resumes", async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ success: false, message: "User ID is required" });
+    }
+
+    const roadmaps = await Resume.find({ user: userId }).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: roadmaps });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching resume", error: error.message });
+  }
+});
+
+// DELETE /api/ai/roadmap/roadmaps/:roadmapId - Delete User Roadmap
+router.delete("/resumes/:resumeId", async (req, res) => {
+  try {
+    const { resumeId } = req.params;
+    const deleted = await Resume.findByIdAndDelete(resumeId);
+
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: "Resume not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Resume deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error deleting resume", error: error.message });
+  }
+});
 // GET /api/ai/credits/:userId/history - Get user's credit usage history
 router.get('/credits/:userId/history', async (req, res) => {
   try {
@@ -712,7 +866,7 @@ router.post('/credits/bulk-allocate', [
   }
 });
 
-const upload = multer({ dest: "uploads/" })
+
 
 // POST /api/ai/ats/upload
 router.post('/ats/upload', upload.single('file'), async (req, res) => {

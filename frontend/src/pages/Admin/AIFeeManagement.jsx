@@ -5,6 +5,8 @@ import { useAuth } from "../../contexts/AuthContext"
 import { useNotification } from "../../contexts/NotificationContext"
 import { Brain, Plus, Search, Download, Eye, Edit } from "lucide-react"
 import FeeManagement from "./FeeManagement"
+import { usersAPI, aiAPI } from "../../services/api"
+
 const AIFeeManagement = () => {
   const { user } = useAuth()
   const { showSuccess, showError } = useNotification()
@@ -36,95 +38,38 @@ const AIFeeManagement = () => {
   })
 
   useEffect(() => {
-    fetchData()
+    fetchUsers()
+    // Optionally, fetch fee records from backend here as well
   }, [])
 
-  const fetchData = async () => {
+  // Fetch users from backend
+  const fetchUsers = async (query = "") => {
+    setLoading(true)
     try {
-      // Mock students data with AI credits and fee info
-      const mockStudents = [
-        {
-          _id: "1",
-          name: "John Doe",
-          admissionNo: "ADM2021001",
-          universityRollNo: "URN2021001",
-          course: "B.Tech",
-          branch: "Computer Science",
-          semester: "5th",
-          aiCredits: 15,
-          totalFeePaid: 150000,
-          pendingFees: 25000,
-          email: "john@example.com",
-        },
-        {
-          _id: "2",
-          name: "Jane Smith",
-          admissionNo: "ADM2021002",
-          universityRollNo: "URN2021002",
-          course: "B.Tech",
-          branch: "Computer Science",
-          semester: "5th",
-          aiCredits: 8,
-          totalFeePaid: 175000,
-          pendingFees: 0,
-          email: "jane@example.com",
-        },
-        {
-          _id: "3",
-          name: "Mike Johnson",
-          admissionNo: "ADM2021003",
-          universityRollNo: "URN2021003",
-          course: "B.Tech",
-          branch: "Electronics",
-          semester: "3rd",
-          aiCredits: 22,
-          totalFeePaid: 100000,
-          pendingFees: 50000,
-          email: "mike@example.com",
-        },
-      ]
-
-      // Mock fee records
-      const mockFeeRecords = [
-        {
-          _id: "1",
-          student: mockStudents[0],
-          feeType: "Tuition Fee",
-          amount: 75000,
-          dueDate: "2024-03-15",
-          status: "pending",
-          semester: "6th",
-          createdAt: "2024-02-01",
-        },
-        {
-          _id: "2",
-          student: mockStudents[1],
-          feeType: "Lab Fee",
-          amount: 5000,
-          dueDate: "2024-02-28",
-          status: "paid",
-          semester: "5th",
-          paidAt: "2024-02-20",
-          createdAt: "2024-02-01",
-        },
-      ]
-
-      setStudents(mockStudents)
-      setFeeRecords(mockFeeRecords)
+      // Use the search query if provided
+      const filters = query ? { q: query } : {}
+      const res = await usersAPI.getUsers(filters)
+      setStudents(res.data?.users || [])
     } catch (error) {
-      showError("Failed to fetch data")
+      showError("Failed to fetch users")
     } finally {
       setLoading(false)
     }
   }
 
+  
   const handleAllocateCredits = async () => {
     if (!creditForm.studentId || !creditForm.credits || creditForm.credits <= 0) {
       showError("Please fill in all required fields")
       return
     }
-
+    console.log(creditForm)
     try {
+
+      await api.updateCredits({userId:creditForm.studentId,
+        credits:creditForm.credits
+      })
+
       setStudents((prev) =>
         prev.map((student) =>
           student._id === creditForm.studentId
@@ -221,16 +166,16 @@ const AIFeeManagement = () => {
 
   const filteredStudents = students.filter(
     (student) =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.admissionNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.universityRollNo.toLowerCase().includes(searchTerm.toLowerCase()),
+      (student.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (student.admissionNo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (student.universityRollNo || "").toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const filteredFeeRecords = feeRecords.filter(
     (record) =>
-      record.student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.student.admissionNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.feeType.toLowerCase().includes(searchTerm.toLowerCase()),
+      (record.student?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (record.student?.admissionNo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (record.feeType || "").toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const renderAICredits = () => (
@@ -335,6 +280,32 @@ const AIFeeManagement = () => {
       <FeeManagement />
     </div>
   )
+
+  const handleSearch = async (e) => {
+    const value = e.target.value
+    setSearchTerm(value)
+    fetchUsers(value)
+  }
+
+  const handleAllocate = async () => {
+    if (!selectedStudent || !creditForm.credits || creditForm.credits <= 0) {
+      showError("Select a user and enter credits")
+      return
+    }
+    setLoading(true)
+    try {
+      await aiAPI.updateCredits(selectedStudent._id, creditForm.credits)
+      showSuccess("Credits allocated successfully!")
+      setCreditForm({ studentId: "", credits: 0, reason: "" })
+      setSelectedStudent(null)
+      setStudents([])
+      setSearchTerm("")
+    } catch (e) {
+      showError(e.message || "Failed to allocate credits")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   if (loading) {
     return (
